@@ -1,0 +1,193 @@
+#include <cstdio>
+#include <RF24.h>
+#include <hardware/clocks.h>
+#include <hardware/rosc.h>
+#include <hardware/structs/scb.h>
+#include "pico.h"
+#include "pico/stdlib.h"
+#include "pico/sleep.h"
+
+// We are going to use SPI 0, and allocate it to the following GPIO pins
+// Pins can be changed, see the GPIO function select table in the datasheet for information on GPIO assignments
+#define RADIO_CHANNEL 24
+#define SPI_PORT spi0
+#define PIN_MISO 16
+#define PIN_CE   20
+#define PIN_CS   17
+#define PIN_SCK  18
+#define PIN_MOSI 19
+#define SENDER 1
+#define JOY_PIN_COUNT 10
+#define DEBUGLED(t) gpio_put(PICO_DEFAULT_LED_PIN, t)
+#define TIMEOUT_SEC 120
+
+//                                    L  R  D  U  A  B  C  D  SEL STA
+const uint8_t joyInPins[JOY_PIN_COUNT] = {2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
+const uint8_t address[][6] = {"P1", "P2", "P3", "P4", "P5", "P6"};
+const uint8_t joyWakePin = joyInPins[9]; // START
+static uint32_t joyPinsMask;
+
+typedef uint16_t payload_t;
+static payload_t payload = 0;
+
+static RF24 radio(PIN_CE, PIN_CS);
+
+
+// Credit: https://ghubcoder.github.io/posts/awaking-the-pico/
+void recoverFromSleep(uint scb_orig, uint clock0_orig, uint clock1_orig) {
+    //Re-enable ring Oscillator control
+    rosc_write(&rosc_hw->ctrl, ROSC_CTRL_ENABLE_BITS);
+
+    //reset procs back to default
+    scb_hw->scr = scb_orig;
+    clocks_hw->sleep_en0 = clock0_orig;
+    clocks_hw->sleep_en1 = clock1_orig;
+
+    //reset clocks
+    clocks_init();
+    stdio_init_all();
+}
+
+void deepSleep() {
+    printf("GOING DOWN...\n");
+
+    uint scb_orig = scb_hw->scr;
+    uint clock0_orig = clocks_hw->sleep_en0;
+    uint clock1_orig = clocks_hw->sleep_en1;
+
+    // Flash to indicate sleep mode
+    for (int i = 0; i < 10; i++) {
+        DEBUGLED(i % 2);
+        sleep_ms(100);
+    }
+    DEBUGLED(false);
+
+    radio.powerDown();
+
+    sleep_run_from_xosc();
+    sleep_goto_dormant_until_pin(joyWakePin, true, false);
+
+    // ----- DEEP SLEEP -----
+
+    recoverFromSleep(scb_orig, clock0_orig, clock1_orig);
+
+    radio.powerUp();
+    printf("COMING UP!\n");
+}
+
+void setup() {
+    stdio_init_all();
+
+    printf("OK\n");
+
+    printf("Radio setup...\n");
+    radio.begin();
+
+    gpio_set_dir(PIN_CS, GPIO_OUT);
+    gpio_put(PIN_CS, true);
+
+    if (!radio.begin()) {
+        panic("RADIO ERROR");
+    }
+
+    radio.setPALevel(RF24_PA_LOW);  // RF24_PA_MAX is default.
+    radio.setChannel(RADIO_CHANNEL);
+    //  radio.setDataRate(RF24_250KBPS); // RF24_1MBPS RF24_2MBPS RF24_250KBPS
+    //  radio.setRetries(2, 10);
+    radio.setPayloadSize(sizeof(payload_t));
+    radio.setAddressWidth(3);
+    //  radio.setAutoAck(false);
+    //  radio.disableAckPayload();
+    //  radio.disableDynamicPayloads();
+
+    radio.openWritingPipe(address[SENDER]);
+    radio.openReadingPipe(1, address[!SENDER]);
+    radio.stopListening();
+
+    GPIO::open(PICO_DEFAULT_LED_PIN, GPIO::DIRECTION_OUT);
+
+    // Joystick pins are all input/pullup
+    for (uint8_t pin: joyInPins) {
+        gpio_init(pin);
+        gpio_set_dir(pin, GPIO::DIRECTION_IN);
+        gpio_pull_up(pin);
+
+        joyPinsMask |= (1ul << pin);
+    }
+    printf("joyPinsMask: %x\n", joyPinsMask);
+
+//    radio.printDetails();
+    radio.printPrettyDetails();
+}
+
+// TODO consider switching to interrupts and underclocking
+inline void loop() {
+    static bool idleState = false;
+    static absolute_time_t idleSleepTime = at_the_end_of_time;
+    static uint32_t gpio_last;
+    static bool lastSendSuccess = false;
+
+    uint32_t gpio_current = gpio_get_all() & joyPinsMask;
+
+    if (gpio_current == gpio_last && lastSendSuccess) {
+        // no change
+
+        if (gpio_current == joyPinsMask) {
+            // idle
+
+            if (!idleState) {
+                printf("idle start...\n");
+                idleState = true;
+                idleSleepTime = make_timeout_time_ms(TIMEOUT_SEC * 1000);
+            } else if (time_reached(idleSleepTime)) {
+                deepSleep();
+                idleState = false;
+                idleSleepTime = at_the_end_of_time;
+            }
+        }
+
+        return;
+    }
+
+    idleState = false;
+    gpio_last = gpio_current;
+//    payload = 0;
+//    for (int i = 0; i < JOY_PIN_COUNT; i++) {
+//        payload |= gpio_get(joyInPins[i]) << i;
+//    }
+    // manually unrolled - UNTESTED!
+    payload =
+            gpio_get(2) |
+            (gpio_get(3) << 1) |
+            (gpio_get(4) << 2) |
+            (gpio_get(5) << 3) |
+            (gpio_get(6) << 4) |
+            (gpio_get(7) << 5) |
+            (gpio_get(8) << 6) |
+            (gpio_get(9) << 7) |
+            (gpio_get(10) << 8) |
+            (gpio_get(11) << 9);
+
+    DEBUGLED(HIGH);
+    lastSendSuccess = radio.write(&payload, sizeof(payload_t));
+    DEBUGLED(LOW);
+
+/*
+    printf("0x%x", payload);
+    if (lastSendSuccess) {
+        printf(" OK\n");
+    } else {
+        printf(" FAIL\n");
+    }
+*/
+}
+
+
+int main() {
+    setup();
+    while (true) {
+        loop();
+    }
+    return 0;
+}
+

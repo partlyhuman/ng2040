@@ -1,0 +1,11 @@
+generated/
+.cmake/
+CMakeFiles/
+Testing/
+CMakeCache.txt
+
+# Store the .uf2 but none of these
+*.elf*
+*.bin
+*.hex
+*.dis

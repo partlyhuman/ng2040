@@ -13,7 +13,7 @@ set(PICO_BOARD pico CACHE STRING "Board type")
 
 include(pico_sdk_import.cmake)
 include(pico_extras_import.cmake)
-include(../lib/RF24/CMakeLists.txt)
+include("${PICO_SDK_PATH}/../lib/RF24/CMakeLists.txt")
 
 if (PICO_SDK_VERSION_STRING VERSION_LESS "1.4.0")
   message(FATAL_ERROR "Raspberry Pi Pico SDK version 1.4.0 (or later) required. Your version is ${PICO_SDK_VERSION_STRING}")
@@ -26,10 +26,10 @@ pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(nrf24joystick nrf24joystick.cpp )
+add_executable(nrf24joystick nrf24joystick.cpp)
 
 pico_set_program_name(nrf24joystick "nrf24joystick")
-pico_set_program_version(nrf24joystick "0.3")
+pico_set_program_version(nrf24joystick "0.4")
 
 pico_enable_stdio_uart(nrf24joystick 0)
 pico_enable_stdio_usb(nrf24joystick 0)

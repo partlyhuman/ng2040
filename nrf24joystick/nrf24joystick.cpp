@@ -10,16 +10,12 @@
 // We are going to use SPI 0, and allocate it to the following GPIO pins
 // Pins can be changed, see the GPIO function select table in the datasheet for information on GPIO assignments
 #define RADIO_CHANNEL 24
-#define SPI_PORT spi0
-#define PIN_MISO 16
 #define PIN_CE   20
 #define PIN_CS   17
-#define PIN_SCK  18
-#define PIN_MOSI 19
 #define SENDER 1
 #define JOY_PIN_COUNT 10
 #define DEBUGLED(t) gpio_put(PICO_DEFAULT_LED_PIN, t)
-#define TIMEOUT_SEC 120
+#define TIMEOUT_SEC 60
 
 //                                    L  R  D  U  A  B  C  D  SEL STA
 const uint8_t joyInPins[JOY_PIN_COUNT] = {2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
@@ -32,6 +28,14 @@ static payload_t payload = 0;
 
 static RF24 radio(PIN_CE, PIN_CS);
 
+void flashLED(int times = 10, int ms = 50) {
+    bool on = true;
+    for (int i = 0; i < times; i++, on = !on) {
+        DEBUGLED(on);
+        sleep_ms(ms);
+    }
+    DEBUGLED(false);
+}
 
 // Credit: https://ghubcoder.github.io/posts/awaking-the-pico/
 void recoverFromSleep(uint scb_orig, uint clock0_orig, uint clock1_orig) {
@@ -50,17 +54,11 @@ void recoverFromSleep(uint scb_orig, uint clock0_orig, uint clock1_orig) {
 
 void deepSleep() {
     printf("GOING DOWN...\n");
+    flashLED();
 
     uint scb_orig = scb_hw->scr;
     uint clock0_orig = clocks_hw->sleep_en0;
     uint clock1_orig = clocks_hw->sleep_en1;
-
-    // Flash to indicate sleep mode
-    for (int i = 0; i < 10; i++) {
-        DEBUGLED(i % 2);
-        sleep_ms(100);
-    }
-    DEBUGLED(false);
 
     radio.powerDown();
 
@@ -104,7 +102,8 @@ void setup() {
     radio.openReadingPipe(1, address[!SENDER]);
     radio.stopListening();
 
-    GPIO::open(PICO_DEFAULT_LED_PIN, GPIO::DIRECTION_OUT);
+    gpio_init(PICO_DEFAULT_LED_PIN);
+    gpio_set_dir(PICO_DEFAULT_LED_PIN, GPIO::DIRECTION_OUT);
 
     // Joystick pins are all input/pullup
     for (uint8_t pin: joyInPins) {
@@ -114,22 +113,25 @@ void setup() {
 
         joyPinsMask |= (1ul << pin);
     }
-    printf("joyPinsMask: %x\n", joyPinsMask);
 
-//    radio.printDetails();
+    printf("joyPinsMask: %x\n", joyPinsMask);
     radio.printPrettyDetails();
+
+    flashLED();
 }
 
 // TODO consider switching to interrupts and underclocking
 inline void loop() {
     static bool idleState = false;
     static absolute_time_t idleSleepTime = at_the_end_of_time;
-    static uint32_t gpio_last;
-    static bool lastSendSuccess = false;
+    static uint32_t gpio_last = joyPinsMask;
+
+    // indicate awake
+    DEBUGLED(true);
 
     uint32_t gpio_current = gpio_get_all() & joyPinsMask;
 
-    if (gpio_current == gpio_last && lastSendSuccess) {
+    if (gpio_current == gpio_last) {
         // no change
 
         if (gpio_current == joyPinsMask) {
@@ -140,9 +142,11 @@ inline void loop() {
                 idleState = true;
                 idleSleepTime = make_timeout_time_ms(TIMEOUT_SEC * 1000);
             } else if (time_reached(idleSleepTime)) {
+                // indicate asleep
+                DEBUGLED(false);
                 deepSleep();
                 idleState = false;
-                idleSleepTime = at_the_end_of_time;
+                gpio_last = joyPinsMask;
             }
         }
 
@@ -150,11 +154,12 @@ inline void loop() {
     }
 
     idleState = false;
-    gpio_last = gpio_current;
-//    payload = 0;
-//    for (int i = 0; i < JOY_PIN_COUNT; i++) {
-//        payload |= gpio_get(joyInPins[i]) << i;
-//    }
+
+    //    payload = 0;
+    //    for (int i = 0; i < JOY_PIN_COUNT; i++) {
+    //        payload |= gpio_get(joyInPins[i]) << i;
+    //    }
+
     // manually unrolled - UNTESTED!
     payload =
             gpio_get(2) |
@@ -168,18 +173,11 @@ inline void loop() {
             (gpio_get(10) << 8) |
             (gpio_get(11) << 9);
 
-    DEBUGLED(HIGH);
-    lastSendSuccess = radio.write(&payload, sizeof(payload_t));
-    DEBUGLED(LOW);
 
-/*
-    printf("0x%x", payload);
-    if (lastSendSuccess) {
-        printf(" OK\n");
-    } else {
-        printf(" FAIL\n");
+    bool send_ok = radio.write(&payload, sizeof(payload_t));
+    if (send_ok) {
+        gpio_last = gpio_current;
     }
-*/
 }
 
 
@@ -190,4 +188,3 @@ int main() {
     }
     return 0;
 }
-

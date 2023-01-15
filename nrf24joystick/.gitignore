@@ -1,0 +1,5 @@
+generated/
+.cmake/
+CMakeFiles/
+Testing/
+CMakeCache.txt

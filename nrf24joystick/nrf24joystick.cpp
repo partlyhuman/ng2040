@@ -10,6 +10,7 @@
 // We are going to use SPI 0, and allocate it to the following GPIO pins
 // Pins can be changed, see the GPIO function select table in the datasheet for information on GPIO assignments
 #define RADIO_CHANNEL 24
+#define RADIO_LEVEL RF24_PA_LOW
 #define PIN_CE   20
 #define PIN_CS   17
 #define SENDER 1
@@ -70,6 +71,8 @@ void deepSleep() {
     recoverFromSleep(scb_orig, clock0_orig, clock1_orig);
 
     radio.powerUp();
+    radio.setPALevel(RADIO_LEVEL);
+
     printf("COMING UP!\n");
 }
 
@@ -88,7 +91,7 @@ void setup() {
         panic("RADIO ERROR");
     }
 
-    radio.setPALevel(RF24_PA_LOW);  // RF24_PA_MAX is default.
+    radio.setPALevel(RADIO_LEVEL);
     radio.setChannel(RADIO_CHANNEL);
     //  radio.setDataRate(RF24_250KBPS); // RF24_1MBPS RF24_2MBPS RF24_250KBPS
     //  radio.setRetries(2, 10);
@@ -160,7 +163,7 @@ inline void loop() {
     //        payload |= gpio_get(joyInPins[i]) << i;
     //    }
 
-    // manually unrolled - UNTESTED!
+    // manually unrolled, update if any changes to pin numbers or payload format
     payload =
             gpio_get(2) |
             (gpio_get(3) << 1) |

@@ -187,6 +187,11 @@
       (net 3 "/VCC") (pinfunction "5V") (pintype "power_in") (tstamp 2e611693-f72e-4c58-8cf2-2ea6c72d91f3))
     (pad "23" thru_hole roundrect (at 2.54 -15.24 90) (size 2.6 1.6002) (drill 0.8 (offset -0.6 0)) (layers *.Cu *.Mask) (roundrect_rratio 0.25)
       (net 10 "/GND") (pinfunction "GND") (pintype "power_in") (tstamp 6954b5d0-48f8-4021-81ab-7bcff6d9e0e1))
+    (model "${KIPRJMOD}/Downloads/RP2040 Zero/RP2040_Zero.stp"
+      (offset (xyz 1.2 0.75 2))
+      (scale (xyz 1 1 1))
+      (rotate (xyz 0 0 0))
+    )
   )
 
   (footprint "DB15:TE_Connectivity-5747845-5-0-0-MFG" (layer "F.Cu")
@@ -245,8 +250,8 @@
       (net 12 "/DL") (pinfunction "P14") (pintype "passive") (tstamp ca5be8e8-7b3f-4010-b746-a5522ce9e642))
     (pad "15" thru_hole circle (at 8.229594 4.8768 180) (size 1.591397 1.591397) (drill 1.0414) (layers *.Cu *.Mask)
       (net 11 "/DU") (pinfunction "P15") (pintype "passive") (tstamp 65cc5759-cbd9-46ce-9fed-6daab422d995))
-    (model "eec.models/TE_Connectivity_-_5747845-5.step"
-      (offset (xyz 0 -236.2199965 0))
+    (model "${KIPRJMOD}/Downloads/DB15/eec.models/TE_Connectivity_-_5747845-5.step"
+      (offset (xyz 0 9.5 0))
       (scale (xyz 1 1 1))
       (rotate (xyz 0 0 0))
     )
@@ -287,13 +292,18 @@
       (net 16 "/MISO") (pinfunction "MISO") (pintype "output") (tstamp bd156d54-2650-4e2d-868c-e26b4d1df9f3))
     (pad "8" smd rect (at 4.49 -8.7) (size 1 2) (layers "B.Cu" "B.Paste" "B.Mask")
       (net 21 "/IRQ") (pinfunction "IRQ") (pintype "output") (tstamp 85249d75-df4d-4860-ba14-d3a2ec31ad4e))
-    (model "${MYSLOCAL}/mysensors.3dshapes/mysensors_radios.3dshapes/nrf24smd.wrl"
+    (model "${MYSLOCAL}/mysensors.3dshapes/mysensors_radios.3dshapes/nrf24smd.wrl" hide
       (offset (xyz -146.3674978 73.65999889 0.7619999886))
       (scale (xyz 0.395 0.395 0.395))
       (rotate (xyz 0 0 0))
     )
-    (model "Housings_DFN_QFN.3dshapes/QFN-20-1EP_5x5mm_Pitch0.65mm.wrl"
+    (model "Housings_DFN_QFN.3dshapes/QFN-20-1EP_5x5mm_Pitch0.65mm.wrl" hide
       (offset (xyz 0.4190999937 -2.768599958 1.574799976))
+      (scale (xyz 1 1 1))
+      (rotate (xyz 0 0 0))
+    )
+    (model "${KIPRJMOD}/Downloads/NRF24L01/nRF24L01+_SMD.stp"
+      (offset (xyz 0 -9 0))
       (scale (xyz 1 1 1))
       (rotate (xyz 0 0 0))
     )

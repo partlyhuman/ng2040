@@ -10,9 +10,6 @@
 #define RADIO_IRQ_PIN 27
 #define RADIO_CE_PIN 26
 #define RADIO_CS_PIN 13
-//#define RADIO_IRQ_PIN 15
-//#define RADIO_CE_PIN 14
-//#define RADIO_CS_PIN 13
 
 RF24 radio(RADIO_CE_PIN, RADIO_CS_PIN);
 
@@ -56,7 +53,7 @@ void rxInterrupt() {
   for (int i = 0; i < JOY_PIN_COUNT; i++) {
     bool pressed = !(payload & (1 << i));
     pinMode(joyOutPins[i], pressed ? OUTPUT : INPUT);
-    if (pressed) digitalWrite(joyOutPins[i], LOW);
+    //    if (pressed) digitalWrite(joyOutPins[i], LOW);
     //    digitalWrite(joyOutPins[i], pressed ? LOW : HIGH);
   }
 
@@ -101,7 +98,7 @@ void setup() {
   // Set the PA Level low to try preventing power supply related problems
   // because these examples are likely run with nodes in close proximity to
   // each other. MIN/LOW/HIGH/MAX
-  radio.setPALevel(RF24_PA_LOW);  // RF24_PA_MAX is default.
+  radio.setPALevel(RF24_PA_MIN);  // RF24_PA_MAX is default.
 
   radio.setChannel(24);
   //  radio.setDataRate(RF24_250KBPS); // RF24_1MBPS RF24_2MBPS RF24_250KBPS
@@ -131,6 +128,7 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(RADIO_IRQ_PIN), rxInterrupt, FALLING);
 
   for (int i = 0; i < JOY_PIN_COUNT; i++) {
+    digitalWrite(joyOutPins[i], LOW);
     pinMode(joyOutPins[i], INPUT);
   }
 
@@ -144,17 +142,4 @@ void setup() {
 }
 
 void loop() {
-  //  // This device is a RX node
-  //  while (radio.available()) {
-  //    radio.read(&payload, sizeof(payload_t));             // fetch payload from FIFO
-  //#ifdef DEBUG
-  //    //    Serial.print(F("Received "));
-  //    //    Serial.print(bytes);  // print the size of the payload
-  //    //    Serial.print(F(" bytes on pipe "));
-  //    //    Serial.print(pipe);  // print the pipe number
-  //    //    Serial.print(F(": "));
-  //    Serial.println(payload);  // print the payload's value
-  //#endif
-  //    digitalWrite(LED_BUILTIN, payload > 0);
-  //  }
 }

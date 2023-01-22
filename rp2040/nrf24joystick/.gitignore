@@ -3,6 +3,14 @@ generated/
 CMakeFiles/
 Testing/
 CMakeCache.txt
+tmp/
+Temp/
+
+/pico-sdk
+/pico_extras
+/pioasm
+/generated
+/elf2uf2
 
 # Store the .uf2 but none of these
 *.elf*

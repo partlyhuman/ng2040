@@ -10,7 +10,7 @@
 // We are going to use SPI 0, and allocate it to the following GPIO pins
 // Pins can be changed, see the GPIO function select table in the datasheet for information on GPIO assignments
 #define RADIO_CHANNEL 24
-#define RADIO_LEVEL RF24_PA_LOW
+#define RADIO_LEVEL RF24_PA_MIN
 #define PIN_CE   20
 #define PIN_CS   17
 #define SENDER 1
@@ -38,6 +38,22 @@ void flashLED(int times = 10, int ms = 50) {
     DEBUGLED(false);
 }
 
+void setupRadio() {
+    radio.setPALevel(RADIO_LEVEL);
+    radio.setChannel(RADIO_CHANNEL);
+    //  radio.setDataRate(RF24_250KBPS); // RF24_1MBPS RF24_2MBPS RF24_250KBPS
+    //  radio.setRetries(2, 10);
+    radio.setPayloadSize(sizeof(payload_t));
+    radio.setAddressWidth(3);
+    //  radio.setAutoAck(false);
+    //  radio.disableAckPayload();
+    //  radio.disableDynamicPayloads();
+
+    radio.openWritingPipe(address[SENDER]);
+    radio.openReadingPipe(1, address[!SENDER]);
+    radio.stopListening();
+}
+
 // Credit: https://ghubcoder.github.io/posts/awaking-the-pico/
 void recoverFromSleep(uint scb_orig, uint clock0_orig, uint clock1_orig) {
     //Re-enable ring Oscillator control
@@ -62,6 +78,7 @@ void deepSleep() {
     uint clock1_orig = clocks_hw->sleep_en1;
 
     radio.powerDown();
+    DEBUGLED(false);
 
     sleep_run_from_xosc();
     sleep_goto_dormant_until_pin(joyWakePin, true, false);
@@ -71,9 +88,10 @@ void deepSleep() {
     recoverFromSleep(scb_orig, clock0_orig, clock1_orig);
 
     radio.powerUp();
-    radio.setPALevel(RADIO_LEVEL);
+    setupRadio();
 
     printf("COMING UP!\n");
+    flashLED(3);
 }
 
 void setup() {
@@ -91,19 +109,7 @@ void setup() {
         panic("RADIO ERROR");
     }
 
-    radio.setPALevel(RADIO_LEVEL);
-    radio.setChannel(RADIO_CHANNEL);
-    //  radio.setDataRate(RF24_250KBPS); // RF24_1MBPS RF24_2MBPS RF24_250KBPS
-    //  radio.setRetries(2, 10);
-    radio.setPayloadSize(sizeof(payload_t));
-    radio.setAddressWidth(3);
-    //  radio.setAutoAck(false);
-    //  radio.disableAckPayload();
-    //  radio.disableDynamicPayloads();
-
-    radio.openWritingPipe(address[SENDER]);
-    radio.openReadingPipe(1, address[!SENDER]);
-    radio.stopListening();
+    setupRadio();
 
     gpio_init(PICO_DEFAULT_LED_PIN);
     gpio_set_dir(PICO_DEFAULT_LED_PIN, GPIO::DIRECTION_OUT);

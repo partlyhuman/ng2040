@@ -13,6 +13,7 @@ set(PICO_BOARD pico CACHE STRING "Board type")
 
 include(pico_sdk_import.cmake)
 include(pico_extras_import.cmake)
+# TODO better for portability to submodule this
 include("${PICO_SDK_PATH}/../lib/RF24/CMakeLists.txt")
 
 if (PICO_SDK_VERSION_STRING VERSION_LESS "1.4.0")
@@ -29,7 +30,7 @@ pico_sdk_init()
 add_executable(nrf24joystick nrf24joystick.cpp)
 
 pico_set_program_name(nrf24joystick "nrf24joystick")
-pico_set_program_version(nrf24joystick "0.4")
+pico_set_program_version(nrf24joystick "0.5")
 
 pico_enable_stdio_uart(nrf24joystick 0)
 pico_enable_stdio_usb(nrf24joystick 0)
@@ -52,4 +53,3 @@ target_link_libraries(nrf24joystick
         )
 
 pico_add_extra_outputs(nrf24joystick)
-

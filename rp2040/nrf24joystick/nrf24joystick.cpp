@@ -7,12 +7,10 @@
 #include "pico/stdlib.h"
 #include "pico/sleep.h"
 
-// We are going to use SPI 0, and allocate it to the following GPIO pins
-// Pins can be changed, see the GPIO function select table in the datasheet for information on GPIO assignments
-#define RADIO_CHANNEL 24
+#define RADIO_CHANNEL 119
 #define RADIO_LEVEL RF24_PA_MIN
-#define PIN_CE   20
-#define PIN_CS   17
+#define PIN_CE 20
+#define PIN_CS 17
 #define SENDER 1
 #define JOY_PIN_COUNT 10
 #define DEBUGLED(t) gpio_put(PICO_DEFAULT_LED_PIN, t)
@@ -41,32 +39,16 @@ void flashLED(int times = 10, int ms = 50) {
 void setupRadio() {
     radio.setPALevel(RADIO_LEVEL);
     radio.setChannel(RADIO_CHANNEL);
-    //  radio.setDataRate(RF24_250KBPS); // RF24_1MBPS RF24_2MBPS RF24_250KBPS
-    //  radio.setRetries(2, 10);
+    radio.setDataRate(RF24_1MBPS); // RF24_1MBPS RF24_2MBPS RF24_250KBPS
+    radio.setRetries(2, 50);
     radio.setPayloadSize(sizeof(payload_t));
     radio.setAddressWidth(3);
-    //  radio.setAutoAck(false);
-    //  radio.disableAckPayload();
-    //  radio.disableDynamicPayloads();
+    radio.setAutoAck(false);
+    radio.disableDynamicPayloads();
 
     radio.openWritingPipe(address[SENDER]);
     radio.openReadingPipe(1, address[!SENDER]);
     radio.stopListening();
-}
-
-// Credit: https://ghubcoder.github.io/posts/awaking-the-pico/
-void recoverFromSleep(uint scb_orig, uint clock0_orig, uint clock1_orig) {
-    //Re-enable ring Oscillator control
-    rosc_write(&rosc_hw->ctrl, ROSC_CTRL_ENABLE_BITS);
-
-    //reset procs back to default
-    scb_hw->scr = scb_orig;
-    clocks_hw->sleep_en0 = clock0_orig;
-    clocks_hw->sleep_en1 = clock1_orig;
-
-    //reset clocks
-    clocks_init();
-    stdio_init_all();
 }
 
 void deepSleep() {
@@ -85,7 +67,18 @@ void deepSleep() {
 
     // ----- DEEP SLEEP -----
 
-    recoverFromSleep(scb_orig, clock0_orig, clock1_orig);
+    // Credit: https://ghubcoder.github.io/posts/awaking-the-pico/
+    //Re-enable ring Oscillator control
+    rosc_write(&rosc_hw->ctrl, ROSC_CTRL_ENABLE_BITS);
+
+    //reset procs back to default
+    scb_hw->scr = scb_orig;
+    clocks_hw->sleep_en0 = clock0_orig;
+    clocks_hw->sleep_en1 = clock1_orig;
+
+    //reset clocks
+    clocks_init();
+    stdio_init_all();
 
     radio.powerUp();
     setupRadio();
@@ -123,7 +116,7 @@ void setup() {
         joyPinsMask |= (1ul << pin);
     }
 
-    printf("joyPinsMask: %x\n", joyPinsMask);
+    printf("joyPinsMask: %lx\n", joyPinsMask);
     radio.printPrettyDetails();
 
     flashLED();
@@ -133,36 +126,27 @@ void setup() {
 inline void loop() {
     static bool idleState = false;
     static absolute_time_t idleSleepTime = at_the_end_of_time;
-    static uint32_t gpio_last = joyPinsMask;
 
     // indicate awake
     DEBUGLED(true);
 
     uint32_t gpio_current = gpio_get_all() & joyPinsMask;
 
-    if (gpio_current == gpio_last) {
-        // no change
-
-        if (gpio_current == joyPinsMask) {
-            // idle
-
-            if (!idleState) {
-                printf("idle start...\n");
-                idleState = true;
-                idleSleepTime = make_timeout_time_ms(TIMEOUT_SEC * 1000);
-            } else if (time_reached(idleSleepTime)) {
-                // indicate asleep
-                DEBUGLED(false);
-                deepSleep();
-                idleState = false;
-                gpio_last = joyPinsMask;
-            }
+    if (gpio_current == joyPinsMask) {
+        // idle
+        if (!idleState) {
+            printf("idle start...\n");
+            idleState = true;
+            idleSleepTime = make_timeout_time_ms(TIMEOUT_SEC * 1000);
+        } else if (time_reached(idleSleepTime)) {
+            // indicate asleep
+            DEBUGLED(false);
+            deepSleep();
+            idleState = false;
         }
-
-        return;
+    } else {
+        idleState = false;
     }
-
-    idleState = false;
 
     //    payload = 0;
     //    for (int i = 0; i < JOY_PIN_COUNT; i++) {
@@ -183,10 +167,7 @@ inline void loop() {
             (gpio_get(11) << 9);
 
 
-    bool send_ok = radio.write(&payload, sizeof(payload_t));
-    if (send_ok) {
-        gpio_last = gpio_current;
-    }
+    radio.write(&payload, sizeof(payload_t));
 }
 
 

@@ -1,7 +1,7 @@
 # NG2040
 ### A pretty cute DIY 2.4GHz wireless controller for Neo Geo
 
-![Wireless Controller and Receiver](img/controller-and-receiver.jpg)
+![Wireless controller and receiver](img/controller-and-receiver.jpg)
 
 Built around the RP2040 platform and the nRF24L01 SPI radio module, this is a wireless controller and receiver that works with your Neo Geo MVS (or AES? I haven't tried).
 
@@ -16,7 +16,7 @@ The Pico uses deep sleep to conserve battery power when not in use. It automatic
 
 ### Software
 
-Flash the software to a Raspberry Pi, a prebuilt image is provided: [nrf24joystick.uf2](blob/main/rp2040/nrf24joystick/nrf24joystick.uf2).
+Flash the software to a Raspberry Pi, a prebuilt image is provided: [nrf24joystick.uf2](rp2040/nrf24joystick/nrf24joystick.uf2).
 
 ### Hardware
 
@@ -24,7 +24,9 @@ Flash the software to a Raspberry Pi, a prebuilt image is provided: [nrf24joysti
 
 ### Case
 
-![](img/joystick-case-print.png)
+Designed to be printable on small FDM printers.
+
+![Joystick case](img/joystick-case-print.png)
 
 
 ## Receiver
@@ -37,13 +39,13 @@ A little simpler than the sender, without power management. A prebuilt image is 
 
 ### Hardware
 
-![PCB Front](img/pcb-front.png)
-![PCB Back](img/pcb-back.png)
-
 Gerbers are provided for fabrication.
+
+![PCB front](img/pcb-front.png)
+![PCB back](img/pcb-back.png)
 
 ### Case
 
-![](img/receiver-case-print.png)
-
 The case holds everything in place with no fasteners or glue.
+
+![Receiver case](img/receiver-case-print.png)

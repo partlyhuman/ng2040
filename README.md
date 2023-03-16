@@ -16,7 +16,7 @@ The Pico uses deep sleep to conserve battery power when not in use. It automatic
 
 ### Software
 
-Flash the software to a Raspberry Pi, a prebuilt image is provided: [nrf24joystick.uf2](rp2040/nrf24joystick/nrf24joystick.uf2).
+Flash the software to a Raspberry Pi Pico, a prebuilt image is provided: [nrf24joystick.uf2](rp2040/nrf24joystick/nrf24joystick.uf2).
 
 ### Hardware
 

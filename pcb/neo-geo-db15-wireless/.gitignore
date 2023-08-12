@@ -1,5 +1,4 @@
-# Don't commit gerber zips
-*.zip
+*.lck
 
 # Created by https://www.toptal.com/developers/gitignore/api/kicad,macos
 # Edit at https://www.toptal.com/developers/gitignore?templates=kicad,macos

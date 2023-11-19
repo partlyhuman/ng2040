@@ -473,7 +473,7 @@
       "idf": "",
       "netlist": "",
       "specctra_dsn": "",
-      "step": "",
+      "step": "../../../../../../private/tmp/NeoGeoDB15Wireless.step",
       "vrml": ""
     },
     "page_layout_descr_file": ""

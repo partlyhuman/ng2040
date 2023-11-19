@@ -264,6 +264,11 @@
       (net 22 "GND") (pinfunction "GND") (pintype "power_in") (tstamp 350236a8-a3ac-421b-b98f-0e48c965e1fc))
     (pad "23" thru_hole roundrect (at 2.54 -22.86 90) (size 2.6 1.6002) (drill 0.8 (offset -0.6 0)) (layers "*.Cu" "*.Mask") (roundrect_rratio 0.25)
       (net 2 "/VCC") (pinfunction "5V") (pintype "power_in") (tstamp 14fbf2c9-12c1-4166-846a-8b6a9aee393e))
+    (model "${KIPRJMOD}/Downloads/RP2040 Zero/RP2040_Zero.stp"
+      (offset (xyz 1 1 4))
+      (scale (xyz 1 1 1))
+      (rotate (xyz 0 0 0))
+    )
   )
 
   (footprint "DB15:TE_Connectivity-5747845-5-0-0-MFG" (layer "F.Cu")

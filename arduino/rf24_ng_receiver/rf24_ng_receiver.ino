@@ -1,10 +1,12 @@
 #include <RF24.h>
 #include <SPI.h>
 #include <printf.h>
+#include <Adafruit_NeoPixel.h>
 
 #undef PLAYER2
 #undef DEBUG
 #define USE_IRQ
+#define USE_RGB
 
 #ifdef PLAYER2
 #define RADIO_CHANNEL 0
@@ -23,15 +25,36 @@ const uint8_t address[][6] = { "P1", "P2", "P3", "P4", "P5", "P6" };  //P1
 #define RADIO_CS_PIN 13
 
 RF24 radio(RADIO_CE_PIN, RADIO_CS_PIN);
+Adafruit_NeoPixel led(1, 16, NEO_GRB);
+
 
 typedef uint16_t payload_t;
 
 #define JOY_PIN_COUNT 10
-
 //                                    L  R  D  U  A  B  C  D  SEL STA
 uint8_t joyOutPins[JOY_PIN_COUNT] = { 2, 3, 1, 0, 4, 5, 6, 7, 9, 8 };
+uint32_t ledColors[JOY_PIN_COUNT] = { 0x101010, 0x101010, 0x101010, 0x101010, 0x300000, 0x181800, 0x003000, 0x000030, 0x200020, 0x200020 };
+
 static payload_t payload = 0;
 static payload_t lastPayload = 0;
+static uint32_t lastColor = 0;
+
+inline void updateJoystick() {
+  uint32_t color = 0;
+  for (int i = 0; i < JOY_PIN_COUNT; i++) {
+    bool pressed = !bitRead(payload, i);
+    // TODO make this a register batch
+    pinMode(joyOutPins[i], pressed ? OUTPUT : INPUT);
+    if (pressed) color = ledColors[i];
+  }
+#ifdef USE_RGB
+  if (color != lastColor) {
+    led.setPixelColor(0, color);
+    led.show();
+    lastColor = color;
+  }
+#endif
+}
 
 void rxInterrupt() {
   // declare variables for IRQ masks
@@ -44,12 +67,7 @@ void rxInterrupt() {
 
   if (radio.available()) {
     radio.read(&payload, sizeof(payload));
-
-    for (int i = 0; i < JOY_PIN_COUNT; i++) {
-      bool pressed = !bitRead(payload, i);
-      pinMode(joyOutPins[i], pressed ? OUTPUT : INPUT);
-    }
-
+    updateJoystick();
 #ifdef DEBUG
     //  radio.printDetails();
     Serial.println(payload, BIN);
@@ -60,9 +78,9 @@ void rxInterrupt() {
 void setup() {
 #ifdef DEBUG
   Serial.begin(115200);
-  while (!Serial) {
-    // some boards need to wait to ensure access to serial over USB
-  }
+  // while (!Serial) {
+  //   // some boards need to wait to ensure access to serial over USB
+  // }
 #endif
 
   SPI1.begin();
@@ -123,11 +141,7 @@ void loop() {
 #ifdef DEBUG
     Serial.println(payload);  // print the payload's value
 #endif
-    for (int i = 0; i < JOY_PIN_COUNT; i++) {
-      bool pressed = !bitRead(payload, i);
-      pinMode(joyOutPins[i], pressed ? OUTPUT : INPUT);
-      // digitalWrite(joyOutPins[i], LOW);
-    }
+    updateJoystick();
   }
 #endif
 }

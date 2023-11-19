@@ -60,10 +60,6 @@ void setup() {
   DEBUGLED(true);
 #ifdef DEBUG
   Serial.begin();
-  delay(100);
-  Serial.printf("OK\n");
-
-  Serial.printf("Radio setup...\n");
 #endif
   radio.begin();
 

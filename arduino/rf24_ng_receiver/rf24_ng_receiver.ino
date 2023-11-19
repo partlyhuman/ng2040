@@ -2,17 +2,26 @@
 #include "printf.h"
 #include "RF24.h"
 
+#undef PLAYER2
 #undef DEBUG
 #define USE_IRQ
-#define SENDER 0
 
+#ifdef PLAYER2
+#define RADIO_CHANNEL 0 
+const uint8_t address[][6] = { "P7", "P8", "P9", "PA", "PB", "PC" }; //P2
+#else
+#define RADIO_CHANNEL 119
+const uint8_t address[][6] = { "P1", "P2", "P3", "P4", "P5", "P6" }; //P1
+#endif
+
+
+#define SENDER 0
 #define DEBUGLED(t)
 
 #define RADIO_IRQ_PIN 27
 #define RADIO_CE_PIN 26
 #define RADIO_CS_PIN 13
 #define RADIO_LEVEL RF24_PA_MIN
-#define RADIO_CHANNEL 119
 
 RF24 radio(RADIO_CE_PIN, RADIO_CS_PIN);
 
@@ -22,7 +31,6 @@ typedef uint16_t payload_t;
 
 //                                    L  R  D  U  A  B  C  D  SEL STA
 uint8_t joyOutPins[JOY_PIN_COUNT] = { 2, 3, 1, 0, 4, 5, 6, 7,  9,  8 };
-uint8_t address[][6] = { "P1", "P2", "P3", "P4", "P5", "P6" };
 static payload_t payload = 0;
 static payload_t lastPayload = 0;
 

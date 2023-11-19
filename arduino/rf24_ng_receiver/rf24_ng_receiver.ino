@@ -1,27 +1,26 @@
+#include <RF24.h>
 #include <SPI.h>
-#include "printf.h"
-#include "RF24.h"
+#include <printf.h>
 
 #undef PLAYER2
 #undef DEBUG
 #define USE_IRQ
 
 #ifdef PLAYER2
-#define RADIO_CHANNEL 0 
-const uint8_t address[][6] = { "P7", "P8", "P9", "PA", "PB", "PC" }; //P2
+#define RADIO_CHANNEL 0
+const uint8_t address[][6] = { "P7", "P8", "P9", "PA", "PB", "PC" };  //P2
 #else
 #define RADIO_CHANNEL 119
-const uint8_t address[][6] = { "P1", "P2", "P3", "P4", "P5", "P6" }; //P1
+const uint8_t address[][6] = { "P1", "P2", "P3", "P4", "P5", "P6" };  //P1
 #endif
-
 
 #define SENDER 0
 #define DEBUGLED(t)
 
+#define RADIO_LEVEL RF24_PA_LOW
 #define RADIO_IRQ_PIN 27
 #define RADIO_CE_PIN 26
 #define RADIO_CS_PIN 13
-#define RADIO_LEVEL RF24_PA_MIN
 
 RF24 radio(RADIO_CE_PIN, RADIO_CS_PIN);
 
@@ -30,13 +29,15 @@ typedef uint16_t payload_t;
 #define JOY_PIN_COUNT 10
 
 //                                    L  R  D  U  A  B  C  D  SEL STA
-uint8_t joyOutPins[JOY_PIN_COUNT] = { 2, 3, 1, 0, 4, 5, 6, 7,  9,  8 };
+uint8_t joyOutPins[JOY_PIN_COUNT] = { 2, 3, 1, 0, 4, 5, 6, 7, 9, 8 };
 static payload_t payload = 0;
 static payload_t lastPayload = 0;
 
 void rxInterrupt() {
-  bool tx_ds, tx_df, rx_dr;                 // declare variables for IRQ masks
-  radio.whatHappened(tx_ds, tx_df, rx_dr);  // get values for IRQ masks
+  // declare variables for IRQ masks
+  bool tx_ds, tx_df, rx_dr;
+  // get values for IRQ masks
+  radio.whatHappened(tx_ds, tx_df, rx_dr);
   // whatHappened() clears the IRQ masks also. This is required for
   // continued TX operations when a transmission fails.
   // clearing the IRQ masks resets the IRQ pin to its inactive state (HIGH)
@@ -45,7 +46,7 @@ void rxInterrupt() {
     radio.read(&payload, sizeof(payload));
 
     for (int i = 0; i < JOY_PIN_COUNT; i++) {
-      bool pressed = !(payload & (1 << i));
+      bool pressed = !bitRead(payload, i);
       pinMode(joyOutPins[i], pressed ? OUTPUT : INPUT);
     }
 
@@ -73,22 +74,22 @@ void setup() {
 #ifdef DEBUG
     Serial.print("RADIO ERROR. ");
     Serial.print(" SCK:");
-    Serial.print(PIN_SPI1_SCK   , DEC);
+    Serial.print(PIN_SPI1_SCK, DEC);
     Serial.print(" MOSI:");
-    Serial.print(PIN_SPI1_MOSI  , DEC);
+    Serial.print(PIN_SPI1_MOSI, DEC);
     Serial.print(" MISO:");
-    Serial.print(PIN_SPI1_MISO  , DEC);
+    Serial.print(PIN_SPI1_MISO, DEC);
     Serial.print(" CSN:");
-    Serial.print(PIN_SPI1_SS    , DEC);
+    Serial.print(PIN_SPI1_SS, DEC);
     Serial.println("");
 #endif
-    while (true);
+    while (true)
+      ;
   }
-
 
   radio.setPALevel(RADIO_LEVEL);
   radio.setChannel(RADIO_CHANNEL);
-  radio.setDataRate(RF24_1MBPS); // RF24_1MBPS RF24_2MBPS RF24_250KBPS
+  radio.setDataRate(RF24_1MBPS);  // RF24_1MBPS RF24_2MBPS RF24_250KBPS
   radio.setPayloadSize(sizeof(payload_t));
   radio.setAddressWidth(3);
   radio.setAutoAck(false);
@@ -109,11 +110,10 @@ void setup() {
   }
 
 #ifdef DEBUG
-  printf_begin();             // needed only once for printing details
-  radio.printDetails();       // (smaller) function that prints raw register values
-  radio.printPrettyDetails(); // (larger) function that prints human readable data
+  printf_begin();              // needed only once for printing details
+  radio.printDetails();        // (smaller) function that prints raw register values
+  radio.printPrettyDetails();  // (larger) function that prints human readable data
 #endif
-
 }
 
 void loop() {
@@ -124,7 +124,7 @@ void loop() {
     Serial.println(payload);  // print the payload's value
 #endif
     for (int i = 0; i < JOY_PIN_COUNT; i++) {
-      bool pressed = !(payload & (1 << i));
+      bool pressed = !bitRead(payload, i);
       pinMode(joyOutPins[i], pressed ? OUTPUT : INPUT);
       // digitalWrite(joyOutPins[i], LOW);
     }

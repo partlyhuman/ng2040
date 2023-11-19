@@ -4,7 +4,7 @@
 #include <SPI.h>
 
 #undef PLAYER2
-#define DEBUG
+#undef DEBUG
 
 #ifdef PLAYER2
 #define RADIO_CHANNEL 0
@@ -14,13 +14,12 @@ const uint8_t address[][6] = { "P7", "P8", "P9", "PA", "PB", "PC" }; //P2
 const uint8_t address[][6] = { "P1", "P2", "P3", "P4", "P5", "P6" }; //P1
 #endif
 
-#define RADIO_LEVEL RF24_PA_MIN
+#define RADIO_LEVEL RF24_PA_LOW
 #define PIN_CE 20
 #define PIN_CS 17
 #define SENDER 1
 #define JOY_PIN_COUNT 10
 #define DEBUGLED(t) gpio_put(PICO_DEFAULT_LED_PIN, t)
-#define TIMEOUT_SEC 60
 
 //                                         L  R  D  U  A  B  C  D  SEL STA
 const uint8_t joyInPins[JOY_PIN_COUNT] = { 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 };
@@ -47,7 +46,7 @@ void setupRadio() {
   radio.setDataRate(RF24_1MBPS);  // RF24_1MBPS RF24_2MBPS RF24_250KBPS
   radio.setRetries(2, 50);
   radio.setPayloadSize(sizeof(payload_t));
-  radio.setAddressWidth(3);
+  radio.setAddressWidth(3); // TODO can we make this 2, or 1?
   radio.setAutoAck(false);
   radio.disableDynamicPayloads();
 
@@ -89,8 +88,10 @@ void setup() {
     joyPinsMask |= (1ul << pin);
   }
 
+#ifdef DEBUG
   Serial.printf("joyPinsMask: %lx\n", joyPinsMask);
   radio.printPrettyDetails();
+#endif
 
   flashLED();
 }

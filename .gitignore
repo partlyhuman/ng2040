@@ -1,5 +1,8 @@
 .DS_Store
 ._*
-
-build/
 .idea/
+
+# Keep the UF2 files ignore the rest
+*.ino.bin
+*.ino.elf
+*.ino.map

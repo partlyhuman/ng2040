@@ -1,6 +1,9 @@
 # NG2040
 ### A pretty cute DIY 2.4GHz wireless controller for Neo Geo
 
+| ⚠️  NOTE this readme is a bit out of date. Need to take new photos. There's a new print with lots of mounting points, the sender has been downgraded back from the Pico SDK to Arduino, and important 3V protection was added to the PCB. |
+|---|
+
 ![Wireless controller and receiver](img/controller-and-receiver.jpg)
 
 Built around the RP2040 platform and the nRF24L01 SPI radio module, this is a wireless controller and receiver that works with your Neo Geo MVS (or AES? I haven't tried).

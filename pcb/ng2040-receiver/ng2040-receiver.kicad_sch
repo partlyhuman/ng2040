@@ -4,6 +4,11 @@
 	(generator_version "8.0")
 	(uuid "e91880d7-e1f1-43ba-b9bf-5f0fc90655d2")
 	(paper "A4")
+	(title_block
+		(title "NG2040 Receiver")
+		(rev "4")
+		(company "@partlyhuman")
+	)
 	(lib_symbols
 		(symbol "Connector:DA15_Receptacle_MountingHoles"
 			(pin_names
@@ -3260,7 +3265,7 @@
 			(uuid "b3d17e52-4bd3-4b08-ac02-f1695b7a2054")
 		)
 		(instances
-			(project "NeoGeoDB15Wireless"
+			(project "ng2040-receiver"
 				(path "/e91880d7-e1f1-43ba-b9bf-5f0fc90655d2"
 					(reference "R4")
 					(unit 1)
@@ -3350,7 +3355,7 @@
 			(uuid "86b75341-bd70-4cd7-95b4-1de0a4e631aa")
 		)
 		(instances
-			(project "NeoGeoDB15Wireless"
+			(project "ng2040-receiver"
 				(path "/e91880d7-e1f1-43ba-b9bf-5f0fc90655d2"
 					(reference "U2")
 					(unit 1)
@@ -3420,7 +3425,7 @@
 			(uuid "e112ce81-a5d1-4f6e-9836-d5fe60379c84")
 		)
 		(instances
-			(project "NeoGeoDB15Wireless"
+			(project "ng2040-receiver"
 				(path "/e91880d7-e1f1-43ba-b9bf-5f0fc90655d2"
 					(reference "R3")
 					(unit 1)
@@ -3490,7 +3495,7 @@
 			(uuid "93032071-1110-4862-9687-8a81c57a16f8")
 		)
 		(instances
-			(project "NeoGeoDB15Wireless"
+			(project "ng2040-receiver"
 				(path "/e91880d7-e1f1-43ba-b9bf-5f0fc90655d2"
 					(reference "R6")
 					(unit 1)
@@ -3560,7 +3565,7 @@
 			(uuid "61ada5bd-4115-4b25-b75f-69f265242a45")
 		)
 		(instances
-			(project "NeoGeoDB15Wireless"
+			(project "ng2040-receiver"
 				(path "/e91880d7-e1f1-43ba-b9bf-5f0fc90655d2"
 					(reference "R10")
 					(unit 1)
@@ -3628,7 +3633,7 @@
 			(uuid "dc9e855c-62ab-4af2-9109-149a4b098e79")
 		)
 		(instances
-			(project "NeoGeoDB15Wireless"
+			(project "ng2040-receiver"
 				(path "/e91880d7-e1f1-43ba-b9bf-5f0fc90655d2"
 					(reference "C1")
 					(unit 1)
@@ -3761,7 +3766,7 @@
 			(uuid "6295fbf0-291f-4d17-a6f5-b90f09dd1f60")
 		)
 		(instances
-			(project "NeoGeoDB15Wireless"
+			(project "ng2040-receiver"
 				(path "/e91880d7-e1f1-43ba-b9bf-5f0fc90655d2"
 					(reference "U1")
 					(unit 1)
@@ -3827,7 +3832,7 @@
 			(uuid "7e8f742c-36c8-4664-8b03-5f4a00e2c376")
 		)
 		(instances
-			(project "NeoGeoDB15Wireless"
+			(project "ng2040-receiver"
 				(path "/e91880d7-e1f1-43ba-b9bf-5f0fc90655d2"
 					(reference "#PWR01")
 					(unit 1)
@@ -3897,7 +3902,7 @@
 			(uuid "dd969dd4-4f9b-426f-a740-dae141cfefa1")
 		)
 		(instances
-			(project "NeoGeoDB15Wireless"
+			(project "ng2040-receiver"
 				(path "/e91880d7-e1f1-43ba-b9bf-5f0fc90655d2"
 					(reference "R5")
 					(unit 1)
@@ -3967,7 +3972,7 @@
 			(uuid "67161d20-6a50-42d3-9736-d28085ccfbbf")
 		)
 		(instances
-			(project "NeoGeoDB15Wireless"
+			(project "ng2040-receiver"
 				(path "/e91880d7-e1f1-43ba-b9bf-5f0fc90655d2"
 					(reference "R8")
 					(unit 1)
@@ -4037,7 +4042,7 @@
 			(uuid "6ad696ab-03a1-4030-89be-58c562a14958")
 		)
 		(instances
-			(project "NeoGeoDB15Wireless"
+			(project "ng2040-receiver"
 				(path "/e91880d7-e1f1-43ba-b9bf-5f0fc90655d2"
 					(reference "R1")
 					(unit 1)
@@ -4103,7 +4108,7 @@
 			(uuid "3e8514a2-0614-47ac-9a6f-5784a04a2117")
 		)
 		(instances
-			(project "NeoGeoDB15Wireless"
+			(project "ng2040-receiver"
 				(path "/e91880d7-e1f1-43ba-b9bf-5f0fc90655d2"
 					(reference "#FLG02")
 					(unit 1)
@@ -4169,7 +4174,7 @@
 			(uuid "3f1ff5fa-2f4f-4121-9146-14c5317c8f10")
 		)
 		(instances
-			(project "NeoGeoDB15Wireless"
+			(project "ng2040-receiver"
 				(path "/e91880d7-e1f1-43ba-b9bf-5f0fc90655d2"
 					(reference "#FLG01")
 					(unit 1)
@@ -4235,7 +4240,7 @@
 			(uuid "f66fbe3b-4db8-4d21-84f7-ff87a81a46eb")
 		)
 		(instances
-			(project "NeoGeoDB15Wireless"
+			(project "ng2040-receiver"
 				(path "/e91880d7-e1f1-43ba-b9bf-5f0fc90655d2"
 					(reference "#PWR02")
 					(unit 1)
@@ -4301,7 +4306,7 @@
 			(uuid "d6e815c4-1cf0-45d1-ac42-c47b58670698")
 		)
 		(instances
-			(project "NeoGeoDB15Wireless"
+			(project "ng2040-receiver"
 				(path "/e91880d7-e1f1-43ba-b9bf-5f0fc90655d2"
 					(reference "#PWR03")
 					(unit 1)
@@ -4411,7 +4416,7 @@
 			(uuid "23a4d563-0640-4223-8365-cf222bdd34ad")
 		)
 		(instances
-			(project "NeoGeoDB15Wireless"
+			(project "ng2040-receiver"
 				(path "/e91880d7-e1f1-43ba-b9bf-5f0fc90655d2"
 					(reference "J1")
 					(unit 1)
@@ -4481,7 +4486,7 @@
 			(uuid "35cabc2a-1ffe-4587-9db4-8bf7f1bdc8a7")
 		)
 		(instances
-			(project "NeoGeoDB15Wireless"
+			(project "ng2040-receiver"
 				(path "/e91880d7-e1f1-43ba-b9bf-5f0fc90655d2"
 					(reference "R2")
 					(unit 1)
@@ -4551,7 +4556,7 @@
 			(uuid "30647f71-2a26-4494-aebb-05089c7b6147")
 		)
 		(instances
-			(project "NeoGeoDB15Wireless"
+			(project "ng2040-receiver"
 				(path "/e91880d7-e1f1-43ba-b9bf-5f0fc90655d2"
 					(reference "R7")
 					(unit 1)
@@ -4621,7 +4626,7 @@
 			(uuid "b1bbb0cc-26ba-49d6-bdfe-9cfb91665b6f")
 		)
 		(instances
-			(project "NeoGeoDB15Wireless"
+			(project "ng2040-receiver"
 				(path "/e91880d7-e1f1-43ba-b9bf-5f0fc90655d2"
 					(reference "R9")
 					(unit 1)
@@ -4689,7 +4694,7 @@
 			(uuid "4c482b1b-be79-47bb-9970-06d5b13870e8")
 		)
 		(instances
-			(project "NeoGeoDB15Wireless"
+			(project "ng2040-receiver"
 				(path "/e91880d7-e1f1-43ba-b9bf-5f0fc90655d2"
 					(reference "C2")
 					(unit 1)

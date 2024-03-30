@@ -2567,7 +2567,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "NRF24L01_Breakout"
+		(property "Value" "NRF24L01"
 			(at 176.53 66.0399 0)
 			(effects
 				(font

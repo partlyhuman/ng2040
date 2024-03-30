@@ -3226,7 +3226,7 @@
 				)
 			)
 		)
-		(property "Value" "SW_DIP_x02"
+		(property "Value" "OPTS"
 			(at 113.03 22.86 0)
 			(effects
 				(font

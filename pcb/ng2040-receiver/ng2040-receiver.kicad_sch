@@ -1753,6 +1753,231 @@
 				)
 			)
 		)
+		(symbol "Switch:SW_DIP_x02"
+			(pin_names
+				(offset 0) hide)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "SW"
+				(at 0 6.35 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "SW_DIP_x02"
+				(at 0 -3.81 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "~"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "2x DIP Switch, Single Pole Single Throw (SPST) switch, small symbol"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "dip switch"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "SW?DIP?x2*"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "SW_DIP_x02_0_0"
+				(circle
+					(center -2.032 0)
+					(radius 0.508)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(circle
+					(center -2.032 2.54)
+					(radius 0.508)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -1.524 0.127) (xy 2.3622 1.1684)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -1.524 2.667) (xy 2.3622 3.7084)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(circle
+					(center 2.032 0)
+					(radius 0.508)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(circle
+					(center 2.032 2.54)
+					(radius 0.508)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "SW_DIP_x02_0_1"
+				(rectangle
+					(start -3.81 5.08)
+					(end 3.81 -2.54)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+			)
+			(symbol "SW_DIP_x02_1_1"
+				(pin passive line
+					(at -7.62 2.54 0)
+					(length 5.08)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at -7.62 0 0)
+					(length 5.08)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 7.62 0 180)
+					(length 5.08)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 7.62 2.54 180)
+					(length 5.08)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "4"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+		)
 		(symbol "power:GND"
 			(power)
 			(pin_names
@@ -2069,14 +2294,6 @@
 		(uuid "7a0826b0-ea2d-4f81-85ff-1da371f9900d")
 	)
 	(no_connect
-		(at 130.81 55.88)
-		(uuid "7a0826b0-ea2d-4f81-85ff-1da371f9900e")
-	)
-	(no_connect
-		(at 130.81 58.42)
-		(uuid "7a0826b0-ea2d-4f81-85ff-1da371f9900f")
-	)
-	(no_connect
 		(at 128.27 26.67)
 		(uuid "7d0f3bb0-ab51-44da-866b-12d0639cd91e")
 	)
@@ -2160,6 +2377,16 @@
 	)
 	(wire
 		(pts
+			(xy 205.74 45.72) (xy 213.36 45.72)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "25625d48-f59d-4419-a59d-007831427ecd")
+	)
+	(wire
+		(pts
 			(xy 64.77 130.81) (xy 91.44 130.81)
 		)
 		(stroke
@@ -2187,6 +2414,16 @@
 			(type default)
 		)
 		(uuid "37af5cbe-a9ff-4748-9b3f-9fd2ee2608a5")
+	)
+	(wire
+		(pts
+			(xy 186.69 48.26) (xy 190.5 48.26)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "38c346e1-c0c4-46c7-9183-978d917f8329")
 	)
 	(wire
 		(pts
@@ -2410,6 +2647,16 @@
 	)
 	(wire
 		(pts
+			(xy 186.69 45.72) (xy 190.5 45.72)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d479d9d1-fb9f-4e6d-ba06-f2ab75a14aaa")
+	)
+	(wire
+		(pts
 			(xy 64.77 162.56) (xy 116.84 162.56)
 		)
 		(stroke
@@ -2417,6 +2664,16 @@
 			(type default)
 		)
 		(uuid "d670e42f-dd18-413b-8437-bab46ff3a6f5")
+	)
+	(wire
+		(pts
+			(xy 205.74 48.26) (xy 213.36 48.26)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "de2bf52b-625f-49e8-8a5d-1e7aab655272")
 	)
 	(wire
 		(pts
@@ -2544,6 +2801,17 @@
 		(uuid "0c9ca00f-0d36-41b7-a318-42fc0972bef0")
 	)
 	(label "GND"
+		(at 213.36 45.72 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "0cdb4a85-8e12-4ace-a266-f42e32797119")
+	)
+	(label "GND"
 		(at 115.57 83.82 270)
 		(fields_autoplaced yes)
 		(effects
@@ -2597,6 +2865,17 @@
 			(justify right bottom)
 		)
 		(uuid "2128b486-05f3-4cef-b253-374853961639")
+	)
+	(label "GND"
+		(at 213.36 48.26 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "29ee45dd-c331-4582-b391-6a7c66968feb")
 	)
 	(label "BB"
 		(at 101.6 68.58 180)
@@ -2652,6 +2931,17 @@
 			(justify left bottom)
 		)
 		(uuid "36a7d47f-d967-4801-a638-c0627e06f6c5")
+	)
+	(label "SET_PLAYER"
+		(at 186.69 45.72 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "3a4feccc-f03e-4878-bd5e-4e7a66ba24c5")
 	)
 	(label "SCK"
 		(at 130.81 68.58 0)
@@ -2983,6 +3273,17 @@
 		)
 		(uuid "9469ddff-e6f1-405f-8107-7bf6a631ada1")
 	)
+	(label "SET_POWER"
+		(at 186.69 48.26 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "97851a9d-e8e5-4098-9bb5-9568a8aa9886")
+	)
 	(label "SEL"
 		(at 64.77 162.56 180)
 		(fields_autoplaced yes)
@@ -2993,6 +3294,17 @@
 			(justify right bottom)
 		)
 		(uuid "9b56a289-fdbb-4bfd-9873-a67c0dfa6ba4")
+	)
+	(label "SET_POWER"
+		(at 130.81 58.42 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "9f007378-ac1c-4cea-b666-fc49035c68b3")
 	)
 	(label "VCC"
 		(at 177.8 27.94 180)
@@ -3125,6 +3437,17 @@
 			(justify right bottom)
 		)
 		(uuid "e0df8e71-2eff-4ffe-aff7-0b2e3cfe674a")
+	)
+	(label "SET_PLAYER"
+		(at 130.81 55.88 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "e420ddba-093e-4c8d-b84f-752cfa17b151")
 	)
 	(label "SEL"
 		(at 101.6 78.74 180)
@@ -3358,6 +3681,88 @@
 			(project "ng2040-receiver"
 				(path "/e91880d7-e1f1-43ba-b9bf-5f0fc90655d2"
 					(reference "U2")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Switch:SW_DIP_x02")
+		(at 198.12 48.26 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "0a03330c-6971-4371-bc2d-26971a4d9519")
+		(property "Reference" "SW1"
+			(at 198.12 38.1 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "OPTS"
+			(at 198.12 40.64 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Button_Switch_SMD:SW_DIP_SPSTx02_Slide_6.7x6.64mm_W8.61mm_P2.54mm_LowProfile"
+			(at 198.12 48.26 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 198.12 48.26 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "2x DIP Switch, Single Pole Single Throw (SPST) switch, small symbol"
+			(at 198.12 48.26 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Notes" ""
+			(at 198.12 48.26 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "4"
+			(uuid "a27cbb78-a5c8-41b7-9878-d216ce71ee1c")
+		)
+		(pin "1"
+			(uuid "f603c981-3a44-4c9d-8368-78c11139bf04")
+		)
+		(pin "2"
+			(uuid "cc80433d-4723-427a-986c-0d50eb0cf361")
+		)
+		(pin "3"
+			(uuid "fa689704-5602-45bf-a64c-44e25114ab4b")
+		)
+		(instances
+			(project "ng2040-receiver"
+				(path "/e91880d7-e1f1-43ba-b9bf-5f0fc90655d2"
+					(reference "SW1")
 					(unit 1)
 				)
 			)

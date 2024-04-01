@@ -92,7 +92,8 @@ void setup() {
   flashLED();
 }
 
-// TODO consider switching to interrupts and underclocking
+// TODO consider underclocking
+// TODO consider throttling rate
 void loop() {
   uint32_t gpio_current = gpio_get_all() & joyPinsMask;
   bool idleState = gpio_current == joyPinsMask;

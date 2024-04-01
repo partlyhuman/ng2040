@@ -2,4 +2,6 @@
   (version 7)
   (lib (name "NRF24L01")(type "KiCad")(uri "${KIPRJMOD}/Downloads/NRF24L01")(options "")(descr ""))
   (lib (name "RP2040Zero")(type "KiCad")(uri "${KIPRJMOD}/Downloads/RP2040 Zero/RP2040-Zero-Kicad-main")(options "")(descr ""))
+  (lib (name "3PinSwitch")(type "KiCad")(uri "${KIPRJMOD}/Downloads/3PinSwitch.pretty")(options "")(descr ""))
+  (lib (name "REB_Switch")(type "KiCad")(uri "${KIPRJMOD}/Downloads/REB_Switch.pretty")(options "")(descr ""))
 )

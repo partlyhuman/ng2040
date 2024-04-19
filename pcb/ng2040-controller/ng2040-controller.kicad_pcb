@@ -5867,6 +5867,17 @@
 			(pintype "passive")
 			(uuid "d48fc07e-df26-4fc6-8191-0147979e4ced")
 		)
+		(model "${KICAD8_3DMODEL_DIR}/Button_Switch_THT.3dshapes/SW_Slide_SPDT_Straight_CK_OS102011MS2Q.step"
+			(offset
+				(xyz 0 0 0)
+			)
+			(scale
+				(xyz 1.2 1 1)
+			)
+			(rotate
+				(xyz 0 0 0)
+			)
+		)
 	)
 	(footprint "RP2040Zero:RP2040-Zero"
 		(layer "B.Cu")

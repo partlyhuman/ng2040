@@ -1,53 +1,45 @@
 #include <RF24.h>
-#include <SPI.h>
-#include <printf.h>
 #include <Adafruit_NeoPixel.h>
+#include <printf.h>
 
-#undef PLAYER2
 #undef DEBUG
 #define USE_IRQ
 #define USE_RGB
 
-#ifdef PLAYER2
-#define RADIO_CHANNEL 0
-const uint8_t address[][6] = { "P7", "P8", "P9", "PA", "PB", "PC" };  //P2
-#else
-#define RADIO_CHANNEL 119
-const uint8_t address[][6] = { "P1", "P2", "P3", "P4", "P5", "P6" };  //P1
-#endif
-
-#define SENDER 0
 #define DEBUGLED(t)
-
-#define RADIO_LEVEL RF24_PA_LOW
+#define RADIO_CHANNEL 119 // Which RF channel to communicate on, 0-125
 #define RADIO_IRQ_PIN 27
 #define RADIO_CE_PIN 26
 #define RADIO_CS_PIN 13
-
-RF24 radio(RADIO_CE_PIN, RADIO_CS_PIN);
-Adafruit_NeoPixel led(1, 16, NEO_GRB);
-
-
-typedef uint16_t payload_t;
+#define PIN_SW_POWER 28
+#define PIN_SW_PLAYER 29
 
 #define JOY_PIN_COUNT 10
-//                                    L  R  D  U  A  B  C  D  SEL STA
-uint8_t joyOutPins[JOY_PIN_COUNT] = { 2, 3, 1, 0, 4, 5, 6, 7, 9, 8 };
-uint32_t ledColors[JOY_PIN_COUNT] = { 0x101010, 0x101010, 0x101010, 0x101010, 0x300000, 0x181800, 0x003000, 0x000030, 0x200020, 0x200020 };
+//                                          L  R  D  U  A  B  C  D  SEL STA
+const uint8_t joyOutPins[JOY_PIN_COUNT] = { 2, 3, 1, 0, 4, 5, 6, 7, 9, 8 };
+const uint32_t ledColors[JOY_PIN_COUNT] = { 0x101010, 0x101010, 0x101010, 0x101010, 0x300000, 0x181800, 0x003000, 0x000030, 0x200020, 0x200020 };
 
+const uint8_t ADDRS[][3] = {"P1", "P2"};
+
+typedef uint16_t payload_t;
 static payload_t payload = 0;
 static payload_t lastPayload = 0;
-static uint32_t lastColor = 0;
+
+static RF24 radio(RADIO_CE_PIN, RADIO_CS_PIN);
+static Adafruit_NeoPixel led(1, 16, NEO_GRB);
 
 inline void updateJoystick() {
   uint32_t color = 0;
   for (int i = 0; i < JOY_PIN_COUNT; i++) {
     bool pressed = !bitRead(payload, i);
-    // TODO make this a register batch
+    // TODO make this a batch like gpio_set...?
     pinMode(joyOutPins[i], pressed ? OUTPUT : INPUT);
+#ifdef USE_RGB
     if (pressed) color = ledColors[i];
+#endif
   }
 #ifdef USE_RGB
+  static uint32_t lastColor = 0;
   if (color != lastColor) {
     led.setPixelColor(0, color);
     led.show();
@@ -78,14 +70,9 @@ void rxInterrupt() {
 void setup() {
 #ifdef DEBUG
   Serial.begin(115200);
-  // while (!Serial) {
-  //   // some boards need to wait to ensure access to serial over USB
-  // }
 #endif
 
   SPI1.begin();
-
-  // initialize the transceiver on the SPI bus
   bool success = radio.begin(&SPI1);
 
   if (!success) {
@@ -101,20 +88,29 @@ void setup() {
     Serial.print(PIN_SPI1_SS, DEC);
     Serial.println("");
 #endif
-    while (true)
-      ;
+    led.setPixelColor(0, 0xff0000);
+    led.show();
+    panic("RADIO ERROR");
   }
+  
+  pinMode(PIN_SW_PLAYER, INPUT_PULLUP);
+  pinMode(PIN_SW_POWER, INPUT_PULLUP);
+  int playerNum = digitalRead(PIN_SW_PLAYER) == LOW ? 2 : 1;
+  bool highPower = digitalRead(PIN_SW_POWER) == LOW;
+  led.setPixelColor(0, playerNum == 1 ? 0x00ff00 : 0x0000ff);
+  led.show();
 
-  radio.setPALevel(RADIO_LEVEL);
+  radio.setPALevel(highPower ? RF24_PA_HIGH : RF24_PA_LOW);
   radio.setChannel(RADIO_CHANNEL);
   radio.setDataRate(RF24_1MBPS);  // RF24_1MBPS RF24_2MBPS RF24_250KBPS
+  radio.setRetries(0, 0);
   radio.setPayloadSize(sizeof(payload_t));
-  radio.setAddressWidth(3);
+  radio.setAddressWidth(3); // Set the address width from 3 to 5 bytes (24, 32 or 40 bit)
   radio.setAutoAck(false);
   radio.disableDynamicPayloads();
 
-  radio.openWritingPipe(address[SENDER]);
-  radio.openReadingPipe(1, address[!SENDER]);
+  // radio.openWritingPipe(address[SENDER]);
+  radio.openReadingPipe(0, ADDRS[playerNum - 1]);
   radio.startListening();
 
 #ifdef USE_IRQ

@@ -875,7 +875,7 @@
 		)
 		(model "${KIPRJMOD}/Downloads/RP2040 Zero/RP2040_Zero.stp"
 			(offset
-				(xyz 1 1 4)
+				(xyz 1 1 1)
 			)
 			(scale
 				(xyz 1 1 1)

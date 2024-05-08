@@ -33,7 +33,7 @@ void flashLED(int times = 10, int ms = 50) {
     led.show();
     sleep_ms(ms);
   }
-  led.setPixelColor(0, 0);
+  led.clear();
   led.show();
 }
 
@@ -41,7 +41,7 @@ void setupRadio() {
   int playerNum = digitalRead(PIN_SW_PLAYER) == LOW ? 2 : 1;
   bool highPower = digitalRead(PIN_SW_POWER) == LOW;
 
-  radio.setPALevel(highPower ? RF24_PA_HIGH : RF24_PA_LOW);
+  radio.setPALevel(highPower ? RF24_PA_MAX : RF24_PA_LOW);
   radio.setChannel(RADIO_CHANNEL);
   radio.setDataRate(RF24_1MBPS);  // RF24_1MBPS RF24_2MBPS RF24_250KBPS
   radio.setRetries(0, 0);
@@ -106,7 +106,7 @@ void loop() {
   uint32_t gpio_current = gpio_get_all() & joyPinsMask;
   bool idleState = gpio_current == joyPinsMask;
 #ifdef USE_RGB
-  led.setPixelColor(0, idleState ? 0x000010 : 0x000060);
+  led.setPixelColor(0, idleState ? 0x100000 : 0x400000);
   led.show();
 #endif
 

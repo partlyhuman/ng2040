@@ -22,29 +22,22 @@ const uint8_t ADDRS[][3] = { "P1", "P2" };
 
 typedef uint16_t payload_t;
 static payload_t payload = 0;
-static payload_t lastPayload = 0;
 
 static RF24 radio(RADIO_CE_PIN, RADIO_CS_PIN);
 static Adafruit_NeoPixel led(1, 16, NEO_GRB);
+static uint32_t currentColor, nextColor;
 
 inline void updateJoystick() {
-  uint32_t color = 0;
+  nextColor = 0;
   for (int i = 0; i < JOY_PIN_COUNT; i++) {
     bool pressed = !bitRead(payload, i);
     // TODO make this a batch like gpio_set...?
-    pinMode(joyOutPins[i], pressed ? OUTPUT : INPUT);
+    gpio_set_dir(joyOutPins[i], pressed);
+    // pinMode(joyOutPins[i], pressed ? OUTPUT : INPUT);
 #ifdef USE_RGB
-    if (pressed) color = ledColors[i];
+    if (pressed) nextColor = ledColors[i];
 #endif
   }
-#ifdef USE_RGB
-  static uint32_t lastColor = 0;
-  if (color != lastColor) {
-    led.setPixelColor(0, color);
-    led.show();
-    lastColor = color;
-  }
-#endif
 }
 
 void rxInterrupt() {
@@ -144,6 +137,14 @@ void loop() {
     Serial.println(payload);  // print the payload's value
 #endif
     updateJoystick();
+  }
+#endif
+
+#ifdef USE_RGB
+  if (nextColor != currentColor) {
+    led.setPixelColor(0, nextColor);
+    led.show();
+    currentColor = nextColor;
   }
 #endif
 }

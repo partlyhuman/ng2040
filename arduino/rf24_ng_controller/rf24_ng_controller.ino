@@ -4,7 +4,7 @@
 #undef DEBUG
 #define USE_RGB
 
-#define RATE 7             // milliseconds between sends. 16 = 60fps. 4 = 250fps
+#define RATE 8             // milliseconds between sends. 16 = 60fps. 4 = 250fps
 #define RADIO_CHANNEL 119  // Which RF channel to communicate on, 0-125
 #define RADIO_CE_PIN 26
 #define RADIO_CS_PIN 13
@@ -25,17 +25,7 @@ static payload_t payload = 0;
 
 static RF24 radio(RADIO_CE_PIN, RADIO_CS_PIN);
 static Adafruit_NeoPixel led(1, 16, NEO_GRB);
-
-void flashLED(int times = 10, int ms = 50) {
-  bool on = true;
-  for (int i = 0; i < times; i++, on = !on) {
-    led.setPixelColor(0, 0xffffff);
-    led.show();
-    sleep_ms(ms);
-  }
-  led.clear();
-  led.show();
-}
+static uint32_t currentColor, nextColor;
 
 void setupRadio() {
   int playerNum = digitalRead(PIN_SW_PLAYER) == LOW ? 2 : 1;
@@ -51,9 +41,15 @@ void setupRadio() {
   radio.disableDynamicPayloads();
 
   radio.openWritingPipe(ADDRS[playerNum - 1]);
-  // No reading pipe needed, right?
-  // radio.openReadingPipe(1, address[!SENDER]);
-  // radio.stopListening();
+
+  led.setPixelColor(0, highPower ? 0xff00ff : 0x101010);
+  led.show();
+  delay(100);
+  led.setPixelColor(0, playerNum == 1 ? 0x00ff00 : 0x0000ff);
+  led.show();
+  delay(100);
+  led.clear();
+  led.show();
 }
 
 
@@ -73,9 +69,8 @@ void setup() {
 
   // Joystick pins are all input/pullup
   for (uint8_t pin : joyInPins) {
-    gpio_init(pin);
-    gpio_set_dir(pin, INPUT);
-    gpio_pull_up(pin);
+    pinMode(pin, INPUT_PULLUP);
+    attachInterrupt(digitalPinToInterrupt(pin), poll, CHANGE);
 
     joyPinsMask |= (1ul << pin);
   }
@@ -90,30 +85,18 @@ void setup() {
   Serial.printf("joyPinsMask: %lx\n", joyPinsMask);
   radio.printPrettyDetails();
 #endif
-
-  flashLED();
 }
 
-static unsigned long lastTime = 0;
-void loop() {
-  // Throttle sending
-  unsigned long now = millis();
-  if (now - lastTime < RATE) {
-    return;
-  }
-  lastTime = now;
-
+void poll() {
   uint32_t gpio_current = gpio_get_all() & joyPinsMask;
   bool idleState = gpio_current == joyPinsMask;
-#ifdef USE_RGB
-  led.setPixelColor(0, idleState ? 0x100000 : 0x400000);
-  led.show();
-#endif
 
+#ifdef USE_RGB
+  nextColor = idleState ? 0x080000 : 0x200000;
+#endif
   // payload = 0;
-  // for (uint8_t pin : joyInPins) {
-  //   payload |= ((gpio_current >> pin) & 0x1);
-  //   payload <<= 1;
+  // for (int i = 0; i < JOY_PIN_COUNT; i++) {
+  //   payload |= (((gpio_current >> joyInPins[i]) & 0x1) << i);
   // }
 
   // manually unrolled, update if any changes to pin numbers or payload format
@@ -121,4 +104,21 @@ void loop() {
     gpio_get(2) | (gpio_get(3) << 1) | (gpio_get(4) << 2) | (gpio_get(5) << 3) | (gpio_get(6) << 4) | (gpio_get(7) << 5) | (gpio_get(8) << 6) | (gpio_get(9) << 7) | (gpio_get(10) << 8) | (gpio_get(11) << 9);
 
   radio.write(&payload, sizeof(payload_t));
+}
+
+static unsigned long lastTime = 0;
+void loop() {
+  // Throttle sending
+  unsigned long now = millis();
+  if (now - lastTime >= RATE) {
+    poll();
+  }
+
+#ifdef USE_RGB
+  if (nextColor != currentColor) {
+    led.setPixelColor(0, nextColor);
+    led.show();
+    currentColor = nextColor;
+  }
+#endif
 }

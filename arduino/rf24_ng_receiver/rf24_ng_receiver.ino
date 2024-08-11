@@ -6,7 +6,7 @@
 #define USE_IRQ
 #define USE_RGB
 
-#define RADIO_CHANNEL 119  // Which RF channel to communicate on, 0-125
+#define RADIO_CHANNEL 28  // Which RF channel to communicate on, 0-125
 #define RADIO_IRQ_PIN 27
 #define RADIO_CE_PIN 26
 #define RADIO_CS_PIN 13
@@ -17,27 +17,33 @@
 //                                          L  R  D  U  A  B  C  D  SEL STA
 const uint8_t joyOutPins[JOY_PIN_COUNT] = { 2, 3, 1, 0, 4, 5, 6, 7, 9, 8 };
 const uint32_t ledColors[JOY_PIN_COUNT] = { 0x101010, 0x101010, 0x101010, 0x101010, 0x300000, 0x181800, 0x003000, 0x000030, 0x200020, 0x200020 };
-
+const uint32_t GPIO_MASK = 0b1111111111;  // GPIO 0-9
 const uint8_t ADDRS[][3] = { "P1", "P2" };
 
 typedef uint16_t payload_t;
-static payload_t payload = 0;
+static payload_t input = 0;
 
 static RF24 radio(RADIO_CE_PIN, RADIO_CS_PIN);
 static Adafruit_NeoPixel led(1, 16, NEO_GRB);
-static uint32_t currentColor, nextColor;
+static uint32_t inputColor, nextColor;
 
 inline void updateJoystick() {
+  static uint32_t gpioDirs;
+  gpioDirs = (0b11110000 & input)  // Covers 4, 5, 6, 7
+             | (bitRead(input, 0) << 2) | (bitRead(input, 1) << 3) | (bitRead(input, 2) << 1) | (bitRead(input, 3)) | (bitRead(input, 8) << 9) | (bitRead(input, 9) << 8);
+  gpio_set_dir_masked(GPIO_MASK, gpioDirs);
+  // Drive all output pins LOW (pretend button is pressed)
+  gpio_put_masked(GPIO_MASK, 0);
+
+#ifdef USE_RGB
   nextColor = 0;
   for (int i = 0; i < JOY_PIN_COUNT; i++) {
-    bool pressed = !bitRead(payload, i);
-    // TODO make this a batch like gpio_set...?
-    gpio_set_dir(joyOutPins[i], pressed);
-    // pinMode(joyOutPins[i], pressed ? OUTPUT : INPUT);
-#ifdef USE_RGB
-    if (pressed) nextColor = ledColors[i];
-#endif
+    if (bitRead(input, i)) {
+      nextColor = ledColors[i];
+      break;
+    }
   }
+#endif
 }
 
 void rxInterrupt() {
@@ -48,10 +54,12 @@ void rxInterrupt() {
   // whatHappened() clears the IRQ masks also. This is required for
   // continued TX operations when a transmission fails.
   // clearing the IRQ masks resets the IRQ pin to its inactive state (HIGH)
-
+  // IRQ must be reset to HIGH before radio.available() called.
   if (radio.available()) {
+    static payload_t payload = 0;
     radio.read(&payload, sizeof(payload));
-    updateJoystick();
+    input = ~payload;
+    // updateJoystick();
 #ifdef DEBUG
     //  radio.printDetails();
     Serial.println(payload, BIN);
@@ -60,6 +68,9 @@ void rxInterrupt() {
 }
 
 void setup() {
+  // Initialize everything as high-z
+  gpio_set_dir_in_masked(GPIO_MASK);
+
 #ifdef DEBUG
   Serial.begin(115200);
 #endif
@@ -130,7 +141,9 @@ void setup() {
 }
 
 void loop() {
-#ifndef USE_IRQ
+#ifdef USE_IRQ
+  updateJoystick();
+#else
   if (radio.available()) {
     radio.read(&payload, sizeof(payload_t));
 #ifdef DEBUG
@@ -140,11 +153,12 @@ void loop() {
   }
 #endif
 
+
 #ifdef USE_RGB
-  if (nextColor != currentColor) {
+  if (nextColor != inputColor) {
     led.setPixelColor(0, nextColor);
     led.show();
-    currentColor = nextColor;
+    inputColor = nextColor;
   }
 #endif
 }

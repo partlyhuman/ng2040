@@ -5,7 +5,7 @@
 #define USE_RGB
 
 #define RATE 8             // milliseconds between sends. 16 = 60fps. 4 = 250fps
-#define RADIO_CHANNEL 119  // Which RF channel to communicate on, 0-125
+#define RADIO_CHANNEL 28  // Which RF channel to communicate on, 0-125
 #define RADIO_CE_PIN 26
 #define RADIO_CS_PIN 13
 #define PIN_SW_POWER 28
@@ -69,8 +69,10 @@ void setup() {
 
   // Joystick pins are all input/pullup
   for (uint8_t pin : joyInPins) {
+    // When you hit a button IMMEDIATELY send it, in addition to the regular polling
     pinMode(pin, INPUT_PULLUP);
-    attachInterrupt(digitalPinToInterrupt(pin), poll, CHANGE);
+    // Interrupts may not be correct without preventing another interrupt from firing while blocking
+    // attachInterrupt(digitalPinToInterrupt(pin), poll, CHANGE);
 
     joyPinsMask |= (1ul << pin);
   }
@@ -111,6 +113,7 @@ void loop() {
   // Throttle sending
   unsigned long now = millis();
   if (now - lastTime >= RATE) {
+    lastTime = now;
     poll();
   }
 

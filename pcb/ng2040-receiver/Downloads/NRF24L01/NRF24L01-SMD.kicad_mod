@@ -1,31 +1,235 @@
-(module NRF24L01-SMD (layer F.Cu) (tedit 574A9E44)
-  (fp_text reference REF** (at 0 1.1) (layer F.SilkS)
-    (effects (font (size 1 1) (thickness 0.15)))
-  )
-  (fp_text value NRF24L01-SMD (at 0 -4.8) (layer F.Fab)
-    (effects (font (size 1 1) (thickness 0.15)))
-  )
-  (fp_line (start -6 -2.8) (end 6 -2.8) (layer F.CrtYd) (width 0.15))
-  (fp_line (start -6 8.7) (end -6 -9.3) (layer F.CrtYd) (width 0.15))
-  (fp_line (start 6 8.7) (end -6 8.7) (layer F.CrtYd) (width 0.15))
-  (fp_line (start 6 -9.3) (end 6 8.7) (layer F.CrtYd) (width 0.15))
-  (fp_line (start -6 -9.3) (end 6 -9.3) (layer F.CrtYd) (width 0.15))
-  (pad 2 smd rect (at -4.4 8.7) (size 1 2) (layers F.Cu F.Paste F.Mask))
-  (pad 1 smd rect (at -3.13 8.7) (size 1 2) (layers F.Cu F.Paste F.Mask))
-  (pad 3 smd rect (at -1.86 8.7) (size 1 2) (layers F.Cu F.Paste F.Mask))
-  (pad 4 smd rect (at -0.59 8.7) (size 1 2) (layers F.Cu F.Paste F.Mask))
-  (pad 5 smd rect (at 0.68 8.7) (size 1 2) (layers F.Cu F.Paste F.Mask))
-  (pad 6 smd rect (at 1.95 8.7) (size 1 2) (layers F.Cu F.Paste F.Mask))
-  (pad 7 smd rect (at 3.22 8.7) (size 1 2) (layers F.Cu F.Paste F.Mask))
-  (pad 8 smd rect (at 4.49 8.7) (size 1 2) (layers F.Cu F.Paste F.Mask))
-  (model ${MYSLOCAL}/mysensors.3dshapes/mysensors_radios.3dshapes/nrf24smd.wrl
-    (at (xyz -5.7625 2.9 0.03))
-    (scale (xyz 0.395 0.395 0.395))
-    (rotate (xyz 0 0 0))
-  )
-  (model Housings_DFN_QFN.3dshapes/QFN-20-1EP_5x5mm_Pitch0.65mm.wrl
-    (at (xyz 0.0165 -0.109 0.062))
-    (scale (xyz 1 1 1))
-    (rotate (xyz 0 0 0))
-  )
+(footprint "NRF24L01-SMD"
+	(version 20240108)
+	(generator "pcbnew")
+	(generator_version "8.0")
+	(layer "F.Cu")
+	(property "Reference" "REF**"
+		(at 0 1.1 0)
+		(layer "F.SilkS")
+		(uuid "5ba89e22-bfd4-4c46-a44c-e0169ace2ded")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Value" "NRF24L01-SMD"
+		(at 0 -4.8 0)
+		(layer "F.Fab")
+		(uuid "094be13a-7f86-4c86-9d88-6fbd15ac6179")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Footprint" ""
+		(at 0 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "4aeb2da3-66e8-48da-9c72-ca99620922fd")
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Datasheet" ""
+		(at 0 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "937692bd-990c-478d-b950-c5b7f928be5b")
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Description" ""
+		(at 0 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "bdfd21bf-dbbb-42f1-bf0e-17804e70da17")
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.15)
+			)
+		)
+	)
+	(attr through_hole)
+	(fp_line
+		(start -6 -9.3)
+		(end 6 -9.3)
+		(stroke
+			(width 0.12)
+			(type default)
+		)
+		(layer "F.SilkS")
+		(uuid "2478375b-38ae-4bf2-817c-65a762a2d7a3")
+	)
+	(fp_line
+		(start -6 8.7)
+		(end -6 -9.3)
+		(stroke
+			(width 0.12)
+			(type default)
+		)
+		(layer "F.SilkS")
+		(uuid "1dc557ab-4cab-46a4-95b5-472338617c0a")
+	)
+	(fp_line
+		(start -5.2 8.7)
+		(end -6 8.7)
+		(stroke
+			(width 0.12)
+			(type default)
+		)
+		(layer "F.SilkS")
+		(uuid "6cfd0128-3b6c-4b70-b007-13e85d6d5b29")
+	)
+	(fp_line
+		(start 6 -9.3)
+		(end 6 8.7)
+		(stroke
+			(width 0.12)
+			(type default)
+		)
+		(layer "F.SilkS")
+		(uuid "d49d6390-1954-4948-a3dd-0277efb1a673")
+	)
+	(fp_line
+		(start 6 8.7)
+		(end 5.2 8.7)
+		(stroke
+			(width 0.12)
+			(type default)
+		)
+		(layer "F.SilkS")
+		(uuid "44381895-5527-4a28-807b-354ac665301a")
+	)
+	(fp_line
+		(start -6 -9.3)
+		(end 6 -9.3)
+		(stroke
+			(width 0.15)
+			(type solid)
+		)
+		(layer "F.CrtYd")
+		(uuid "f43e5f49-7039-40f9-8ac4-a9c8598b5b1b")
+	)
+	(fp_line
+		(start -6 -2.8)
+		(end 6 -2.8)
+		(stroke
+			(width 0.15)
+			(type solid)
+		)
+		(layer "F.CrtYd")
+		(uuid "a4c3a3be-68b9-4943-8005-67819ab29ae1")
+	)
+	(fp_line
+		(start -6 8.7)
+		(end -6 -9.3)
+		(stroke
+			(width 0.15)
+			(type solid)
+		)
+		(layer "F.CrtYd")
+		(uuid "1d75e4d3-4338-4354-ae16-b8b87adf6486")
+	)
+	(fp_line
+		(start 6 -9.3)
+		(end 6 8.7)
+		(stroke
+			(width 0.15)
+			(type solid)
+		)
+		(layer "F.CrtYd")
+		(uuid "3964d770-1009-48ea-a6c4-4c44f2812148")
+	)
+	(fp_line
+		(start 6 8.7)
+		(end -6 8.7)
+		(stroke
+			(width 0.15)
+			(type solid)
+		)
+		(layer "F.CrtYd")
+		(uuid "1ae7c632-71cd-4f9b-94ae-efb860021043")
+	)
+	(pad "1" smd rect
+		(at -3.13 8.7)
+		(size 1 2)
+		(layers "F.Cu" "F.Paste" "F.Mask")
+		(uuid "c13cb011-5271-4f49-9bf9-f6e13b708f0f")
+	)
+	(pad "2" smd rect
+		(at -4.4 8.7)
+		(size 1 2)
+		(layers "F.Cu" "F.Paste" "F.Mask")
+		(uuid "58b3d05f-3ff9-42a8-9af1-b4a44b1f5610")
+	)
+	(pad "3" smd rect
+		(at -1.86 8.7)
+		(size 1 2)
+		(layers "F.Cu" "F.Paste" "F.Mask")
+		(uuid "ee27f416-74bb-4c61-b0ce-ac818bb164e4")
+	)
+	(pad "4" smd rect
+		(at -0.59 8.7)
+		(size 1 2)
+		(layers "F.Cu" "F.Paste" "F.Mask")
+		(uuid "c54b900f-8c5a-4f54-94e5-910626893b85")
+	)
+	(pad "5" smd rect
+		(at 0.68 8.7)
+		(size 1 2)
+		(layers "F.Cu" "F.Paste" "F.Mask")
+		(uuid "293f79eb-9b7d-458c-8224-49310a2f4044")
+	)
+	(pad "6" smd rect
+		(at 1.95 8.7)
+		(size 1 2)
+		(layers "F.Cu" "F.Paste" "F.Mask")
+		(uuid "ca26bb10-78bf-423e-9b88-fa2b64095660")
+	)
+	(pad "7" smd rect
+		(at 3.22 8.7)
+		(size 1 2)
+		(layers "F.Cu" "F.Paste" "F.Mask")
+		(uuid "17316954-10c4-4f88-8e31-90a79f6dd315")
+	)
+	(pad "8" smd rect
+		(at 4.49 8.7)
+		(size 1 2)
+		(layers "F.Cu" "F.Paste" "F.Mask")
+		(uuid "8a394a48-1180-4188-855d-8a200620f712")
+	)
+	(model "${MYSLOCAL}/mysensors.3dshapes/mysensors_radios.3dshapes/nrf24smd.wrl"
+		(offset
+			(xyz -146.3674978 73.65999889 0.7619999886)
+		)
+		(scale
+			(xyz 0.395 0.395 0.395)
+		)
+		(rotate
+			(xyz 0 0 0)
+		)
+	)
+	(model "Housings_DFN_QFN.3dshapes/QFN-20-1EP_5x5mm_Pitch0.65mm.wrl"
+		(offset
+			(xyz 0.4190999937 -2.768599958 1.574799976)
+		)
+		(scale
+			(xyz 1 1 1)
+		)
+		(rotate
+			(xyz 0 0 0)
+		)
+	)
 )

@@ -33,7 +33,7 @@ void setupRadio() {
 
   radio.setPALevel(highPower ? RF24_PA_MAX : RF24_PA_LOW);
   radio.setChannel(RADIO_CHANNEL);
-  radio.setDataRate(RF24_1MBPS);  // RF24_1MBPS RF24_2MBPS RF24_250KBPS
+  radio.setDataRate(RF24_250KBPS);  // RF24_1MBPS RF24_2MBPS RF24_250KBPS
   radio.setRetries(0, 0);
   radio.setPayloadSize(sizeof(payload_t));
   radio.setAddressWidth(3);  // Set the address width from 3 to 5 bytes (24, 32 or 40 bit)
@@ -71,8 +71,7 @@ void setup() {
   for (uint8_t pin : joyInPins) {
     // When you hit a button IMMEDIATELY send it, in addition to the regular polling
     pinMode(pin, INPUT_PULLUP);
-    // Interrupts may not be correct without preventing another interrupt from firing while blocking
-    // attachInterrupt(digitalPinToInterrupt(pin), poll, CHANGE);
+    attachInterrupt(digitalPinToInterrupt(pin), poll, CHANGE);
 
     joyPinsMask |= (1ul << pin);
   }

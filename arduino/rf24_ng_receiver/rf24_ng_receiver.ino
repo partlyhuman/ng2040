@@ -59,7 +59,7 @@ void rxInterrupt() {
     static payload_t payload = 0;
     radio.read(&payload, sizeof(payload));
     input = ~payload;
-    // updateJoystick();
+    updateJoystick();
 #ifdef DEBUG
     //  radio.printDetails();
     Serial.println(payload, BIN);
@@ -103,7 +103,7 @@ void setup() {
 
   radio.setPALevel(highPower ? RF24_PA_MAX : RF24_PA_LOW);
   radio.setChannel(RADIO_CHANNEL);
-  radio.setDataRate(RF24_1MBPS);  // RF24_1MBPS RF24_2MBPS RF24_250KBPS
+  radio.setDataRate(RF24_250KBPS);  // RF24_1MBPS RF24_2MBPS RF24_250KBPS
   radio.setRetries(0, 0);
   radio.setPayloadSize(sizeof(payload_t));
   radio.setAddressWidth(3);  // Set the address width from 3 to 5 bytes (24, 32 or 40 bit)

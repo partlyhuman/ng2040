@@ -3805,12 +3805,12 @@
 	(symbol
 		(lib_id "Switch:SW_DIP_x02")
 		(at 198.12 48.26 0)
+		(mirror y)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "0a03330c-6971-4371-bc2d-26971a4d9519")
 		(property "Reference" "SW1"
 			(at 198.12 38.1 0)

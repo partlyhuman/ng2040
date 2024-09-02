@@ -99,7 +99,10 @@ void setup() {
   pinMode(PIN_SW_PLAYER, INPUT_PULLUP);
   pinMode(PIN_SW_POWER, INPUT_PULLUP);
   int playerNum = digitalRead(PIN_SW_PLAYER) == LOW ? 2 : 1;
-  bool highPower = digitalRead(PIN_SW_POWER) == LOW;
+  
+  // DONT COMMIT
+  //bool highPower = digitalRead(PIN_SW_POWER) == LOW;
+  bool highPower = true;
 
   radio.setPALevel(highPower ? RF24_PA_MAX : RF24_PA_LOW);
   radio.setChannel(RADIO_CHANNEL);

@@ -4,12 +4,14 @@
 #undef DEBUG
 #define USE_RGB
 
-#define RATE 8             // milliseconds between sends. 16 = 60fps. 4 = 250fps
+#define RATE 8            // milliseconds between sends. 16 = 60fps. 4 = 250fps
 #define RADIO_CHANNEL 28  // Which RF channel to communicate on, 0-125
 #define RADIO_CE_PIN 26
 #define RADIO_CS_PIN 13
 #define PIN_SW_POWER 28
 #define PIN_SW_PLAYER 29
+#define PIN_POWER_RADIO 0
+#define PIN_BATT_VSENSE A1
 
 #define JOY_PIN_COUNT 10
 //                                         L  R  D  U  A  B  C  D  SEL STA
@@ -29,7 +31,9 @@ static uint32_t currentColor, nextColor;
 
 void setupRadio() {
   int playerNum = digitalRead(PIN_SW_PLAYER) == LOW ? 2 : 1;
-  bool highPower = digitalRead(PIN_SW_POWER) == LOW;
+  // DONT COMMIT
+  //bool highPower = digitalRead(PIN_SW_POWER) == LOW;
+  bool highPower = true;
 
   radio.setPALevel(highPower ? RF24_PA_MAX : RF24_PA_LOW);
   radio.setChannel(RADIO_CHANNEL);
@@ -58,12 +62,34 @@ void setup() {
   Serial.begin(115200);
 #endif
 
+  pinMode(PIN_BATT_VSENSE, INPUT);
+
+  // Should we try changing the drive strength of the GPIO pins?
+
+  // XXX REV2 MOSI/MISO flipped?
+  // SPIClassRP2040 myspi(15, 13, 14, 12);
+  // myspi.begin();
+  // SPI.setMISO(15);
+  // SPI.setMOSI(12);
+  // SPI.setCS(13);
+  // SPI.setSCK(14);
+  // XXX
+  // SPI.begin(true);
+
+  // Turn on radio power
+  pinMode(PIN_POWER_RADIO, OUTPUT);
+  digitalWrite(PIN_POWER_RADIO, HIGH);
+  delay(100);  // <2MS startup time for LDO
+
   SPI1.begin();
   bool success = radio.begin(&SPI1);
+  //  bool success = radio.begin(&SPI);
 
   if (!success) {
+#ifdef USE_RGB
     led.setPixelColor(0, 0xff0000);
     led.show();
+#endif
     panic("RADIO ERROR");
   }
 
@@ -92,9 +118,7 @@ void poll() {
   uint32_t gpio_current = gpio_get_all() & joyPinsMask;
   bool idleState = gpio_current == joyPinsMask;
 
-#ifdef USE_RGB
-  nextColor = idleState ? 0x080000 : 0x200000;
-#endif
+  nextColor = idleState ? 0x000030 : 0x000080;
   // payload = 0;
   // for (int i = 0; i < JOY_PIN_COUNT; i++) {
   //   payload |= (((gpio_current >> joyInPins[i]) & 0x1) << i);
@@ -116,11 +140,11 @@ void loop() {
     poll();
   }
 
-#ifdef USE_RGB
   if (nextColor != currentColor) {
+#ifdef USE_RGB
     led.setPixelColor(0, nextColor);
     led.show();
+#endif
     currentColor = nextColor;
   }
-#endif
 }

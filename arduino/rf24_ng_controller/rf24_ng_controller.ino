@@ -21,7 +21,7 @@ uint32_t currentColor, nextColor;
 
 RF24 radio(RADIO_CE_PIN, RADIO_CS_PIN);
 Ticker lowPowerBlinkTicker(lowPowerBlink, 500);
-Ticker lowPowerSampleTicker(lowPowerSample, 10512);
+Ticker lowPowerSampleTicker(lowPowerSample, 2100);
 Ticker joystickPollTicker(joystickPoll, RATE);
 
 
@@ -80,9 +80,11 @@ void setup() {
     led.setPixelColor(0, 0xff0000);
     led.show();
 #else
+    // blink really fast
+    lowPowerBlinkTicker.interval(100);
     lowPowerBlinkTicker.start();
 #endif
-    panic("RADIO ERROR");
+    return;
   }
 
   // Joystick pins are all input/pullup
@@ -119,13 +121,14 @@ void joystickPoll() {
 
 void lowPowerSample() {
   if (lowPowerBlinkTicker.state() == STOPPED) {
-    float volts = map(analogRead(PIN_BATT_VSENSE), 0, 4096, 0, 3300) / 1000.0;
+    float volts = map(analogRead(PIN_BATT_VSENSE), 0, 1023, 0, 3300) / 1000.0;
     if (volts < 0.5f) {
       // Probably not connected, ignore
       return;
     }
 
-    if (volts < 3.4f) {
+    // Could simplify if cutoff >= 3.3V then just check against max 1024
+    if (volts < 3.25f) {
       lowPowerBlinkTicker.start();
     }
   }

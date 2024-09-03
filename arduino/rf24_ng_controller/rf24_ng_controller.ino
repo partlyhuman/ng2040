@@ -12,15 +12,18 @@ Adafruit_NeoPixel led(1, 16, NEO_GRB);
 const uint8_t joyInPins[JOY_PIN_COUNT] = { 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 };
 const uint32_t ledColors[JOY_PIN_COUNT] = { 0x101010, 0x101010, 0x101010, 0x101010, 0x300000, 0x181800, 0x003000, 0x000030, 0x200020, 0x200020 };
 const uint8_t ADDRS[][3] = { "P1", "P2" };
+const uint16_t POWER_DOWN_AFTER_IDLES = 2 * 1000 / RATE;  // N seconds
 typedef uint16_t payload_t;
 
 uint32_t joyPinsMask;
-payload_t payload = 0;
 uint32_t currentColor, nextColor;
-bool idleState;
+volatile bool isIdle;
+volatile bool isPowered = true;
+bool isBatteryLow = false;
+volatile uint32_t idles = 0;
 
 RF24 radio(RADIO_CE_PIN, RADIO_CS_PIN);
-Ticker lowPowerBlinkTicker(lowPowerBlink, 500);
+Ticker ledBlinkTicker(ledBlink, 500);
 Ticker lowPowerSampleTicker(lowPowerSample, 2100);
 Ticker joystickLoopTicker(joystickLoop, RATE);
 
@@ -33,7 +36,7 @@ void setupRadio() {
   radio.setDataRate(RF24_250KBPS);  // RF24_1MBPS RF24_2MBPS RF24_250KBPS
   radio.setRetries(0, 0);
   radio.setPayloadSize(sizeof(payload_t));
-  radio.setAddressWidth(3);  // Set the address width from 3 to 5 bytes (24, 32 or 40 bit)
+  radio.setAddressWidth(3);  // 3 is minimum (in our case "P1\0")
   radio.setAutoAck(false);
   radio.disableDynamicPayloads();
 
@@ -60,7 +63,7 @@ void setup() {
 
   pinMode(PIN_BATT_VSENSE, INPUT);
   pinMode(PIN_LED, OUTPUT);
-  pinMode(PICO_DEFAULT_LED_PIN, OUTPUT);
+  // pinMode(PICO_DEFAULT_LED_PIN, OUTPUT);
   pinMode(PIN_SW_PLAYER, INPUT_PULLUP);
   pinMode(PIN_SW_POWER, INPUT_PULLUP);
   // Should we try changing the drive strength of the GPIO pins?
@@ -80,8 +83,8 @@ void setup() {
     led.show();
 #else
     // blink really fast
-    lowPowerBlinkTicker.interval(100);
-    lowPowerBlinkTicker.start();
+    ledBlinkTicker.interval(100);
+    ledBlinkTicker.start();
 #endif
     return;
   }
@@ -103,13 +106,16 @@ void setup() {
 
 inline payload_t joystickPoll() {
   uint32_t gpio_current = gpio_get_all() & joyPinsMask;
-  idleState = gpio_current == joyPinsMask;
-  nextColor = idleState ? 0x000030 : 0x000080;
+  isIdle = gpio_current == joyPinsMask;
+  idles = isIdle ? idles + 1 : 0;
+  nextColor = isIdle ? 0x000030 : 0x000080;
   return gpio_current >> 2;
 }
 
 void joystickISR() {
   payload_t payloadBuffer = joystickPoll();
+  if (!isPowered || idles >= POWER_DOWN_AFTER_IDLES) return;
+
   // Previous states are of no use to us
   radio.flush_tx();
   // Send new state immediately.
@@ -117,12 +123,41 @@ void joystickISR() {
   // // This function now leaves the CE pin high, so the radio
   // // will remain in TX or STANDBY-II Mode until a txStandBy() command is issued.
   // So standby happens after next scheduled send.
+  //                   buf,            len,               multicast, startTx
   radio.startFastWrite(&payloadBuffer, sizeof(payload_t), false, true);
 }
 
-// TODO: count idle cycles and shut down radio after N cycles
+void updateRadioPowered() {
+  if (isIdle) {
+    if (isPowered && idles > POWER_DOWN_AFTER_IDLES) {
+      isPowered = false;
+      // In case there is an in-flight send
+      delayMicroseconds(100);
+      radio.powerDown();
+      if (!isBatteryLow) {
+        // Simulate dimming, but battery low flash should not be messed with
+        ledBlinkTicker.interval(10);
+        ledBlinkTicker.start();
+      }
+    }
+  } else {
+    if (!isPowered) {
+      radio.powerUp();
+      if (!isBatteryLow) {
+        ledBlinkTicker.stop();
+        digitalWrite(PIN_LED, HIGH);
+      }
+      isPowered = true;
+    }
+  }
+}
+
 void joystickLoop() {
   payload_t payloadBuffer = joystickPoll();
+
+  updateRadioPowered();
+
+  if (!isPowered) return;
 
   // Disable interrupts to ensure exclusive access to the radio during the blocking write
   // Blocking is fine in main loop.
@@ -143,28 +178,33 @@ void joystickLoop() {
 }
 
 void lowPowerSample() {
-  if (lowPowerBlinkTicker.state() == STOPPED) {
-    float volts = map(analogRead(PIN_BATT_VSENSE), 0, 1023, 0, 3300) / 1000.0;
-    if (volts < 0.5f) {
-      // Probably not connected, ignore
-      return;
-    }
+  if (isBatteryLow) return;
 
-    // Could simplify if cutoff >= 3.3V then just check against max 1024
-    if (volts < 3.25f) {
-      lowPowerBlinkTicker.start();
-    }
+  float volts = map(analogRead(PIN_BATT_VSENSE), 0, 1023, 0, 3300) / 1000.0;
+  if (volts < 0.5f) {
+    // Probably not connected, ignore
+    return;
+  }
+
+  // Could simplify if cutoff >= 3.3V then just check against max 1024
+  if (volts < 3.25f) {
+    isBatteryLow = true;
+    // Slow blink
+    ledBlinkTicker.interval(500);
+    ledBlinkTicker.start();
+    // Permanent state, no rechecking needed
+    lowPowerSampleTicker.stop();
   }
 }
 
-static bool blinkOn = false;
-void lowPowerBlink() {
+void ledBlink() {
+  static bool blinkOn = false;
   blinkOn = !blinkOn;
   digitalWrite(PIN_LED, blinkOn);
 }
 
 void loop() {
-  lowPowerBlinkTicker.update();
-  lowPowerSampleTicker.update();
   joystickLoopTicker.update();
+  lowPowerSampleTicker.update();
+  ledBlinkTicker.update();
 }

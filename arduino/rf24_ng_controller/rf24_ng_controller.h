@@ -11,7 +11,7 @@
 #define PIN_BATT_VSENSE A1
 #define PIN_LED 1
 
-void lowPowerBlink();
+void ledBlink();
 void lowPowerSample();
 void joystickLoop();
 void joystickISR();

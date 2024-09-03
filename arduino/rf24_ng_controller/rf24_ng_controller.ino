@@ -11,19 +11,18 @@ Adafruit_NeoPixel led(1, 16, NEO_GRB);
 //                                         L  R  D  U  A  B  C  D  SEL STA
 const uint8_t joyInPins[JOY_PIN_COUNT] = { 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 };
 const uint32_t ledColors[JOY_PIN_COUNT] = { 0x101010, 0x101010, 0x101010, 0x101010, 0x300000, 0x181800, 0x003000, 0x000030, 0x200020, 0x200020 };
-
+const uint8_t ADDRS[][3] = { "P1", "P2" };
 typedef uint16_t payload_t;
 
 uint32_t joyPinsMask;
-const uint8_t ADDRS[][3] = { "P1", "P2" };
 payload_t payload = 0;
 uint32_t currentColor, nextColor;
+bool idleState;
 
 RF24 radio(RADIO_CE_PIN, RADIO_CS_PIN);
 Ticker lowPowerBlinkTicker(lowPowerBlink, 500);
 Ticker lowPowerSampleTicker(lowPowerSample, 2100);
-Ticker joystickPollTicker(joystickPoll, RATE);
-
+Ticker joystickLoopTicker(joystickLoop, RATE);
 
 void setupRadio() {
   int playerNum = digitalRead(PIN_SW_PLAYER) == LOW ? 2 : 1;
@@ -71,7 +70,7 @@ void setup() {
   // Turn on radio power
   pinMode(PIN_POWER_RADIO, OUTPUT);
   digitalWrite(PIN_POWER_RADIO, HIGH);
-  delay(50);  // <2MS startup time for LDO
+  delay(10);  // <2MS startup time for LDO
 
   bool success = radio.begin(&SPI1);
 
@@ -91,7 +90,7 @@ void setup() {
   for (uint8_t pin : joyInPins) {
     // When you hit a button IMMEDIATELY send it, in addition to the regular polling
     pinMode(pin, INPUT_PULLUP);
-    attachInterrupt(digitalPinToInterrupt(pin), joystickPoll, CHANGE);
+    attachInterrupt(digitalPinToInterrupt(pin), joystickISR, CHANGE);
 
     joyPinsMask |= (1ul << pin);
   }
@@ -99,24 +98,48 @@ void setup() {
   setupRadio();
 
   lowPowerSampleTicker.start();
-  joystickPollTicker.start();
+  joystickLoopTicker.start();
 }
 
-void joystickPoll() {
+inline payload_t joystickPoll() {
   uint32_t gpio_current = gpio_get_all() & joyPinsMask;
-  bool idleState = gpio_current == joyPinsMask;
-
+  idleState = gpio_current == joyPinsMask;
   nextColor = idleState ? 0x000030 : 0x000080;
-  // payload = 0;
-  // for (int i = 0; i < JOY_PIN_COUNT; i++) {
-  //   payload |= (((gpio_current >> joyInPins[i]) & 0x1) << i);
-  // }
+  return gpio_current >> 2;
+}
 
-  // manually unrolled, update if any changes to pin numbers or payload format
-  payload =
-    gpio_get(2) | (gpio_get(3) << 1) | (gpio_get(4) << 2) | (gpio_get(5) << 3) | (gpio_get(6) << 4) | (gpio_get(7) << 5) | (gpio_get(8) << 6) | (gpio_get(9) << 7) | (gpio_get(10) << 8) | (gpio_get(11) << 9);
+void joystickISR() {
+  payload_t payloadBuffer = joystickPoll();
+  // Previous states are of no use to us
+  radio.flush_tx();
+  // Send new state immediately.
+  // Non-blocking, add to FIFO and start sending, safe for ISR. Note from docs:
+  // // This function now leaves the CE pin high, so the radio
+  // // will remain in TX or STANDBY-II Mode until a txStandBy() command is issued.
+  // So standby happens after next scheduled send.
+  radio.startFastWrite(&payloadBuffer, sizeof(payload_t), false, true);
+}
 
-  radio.write(&payload, sizeof(payload_t));
+// TODO: count idle cycles and shut down radio after N cycles
+void joystickLoop() {
+  payload_t payloadBuffer = joystickPoll();
+
+  // Disable interrupts to ensure exclusive access to the radio during the blocking write
+  // Blocking is fine in main loop.
+  // Drop back to standby mode when fifo is flushed.
+  noInterrupts();
+  radio.flush_tx();
+  radio.write(&payloadBuffer, sizeof(payload_t));
+  radio.txStandBy();
+  interrupts();
+
+#ifdef USE_RGB
+  if (nextColor != currentColor) {
+    led.setPixelColor(0, nextColor);
+    led.show();
+    currentColor = nextColor;
+  }
+#endif
 }
 
 void lowPowerSample() {
@@ -143,13 +166,5 @@ void lowPowerBlink() {
 void loop() {
   lowPowerBlinkTicker.update();
   lowPowerSampleTicker.update();
-  joystickPollTicker.update();
-
-#ifdef USE_RGB
-  if (nextColor != currentColor) {
-    led.setPixelColor(0, nextColor);
-    led.show();
-    currentColor = nextColor;
-  }
-#endif
+  joystickLoopTicker.update();
 }

@@ -13,4 +13,5 @@
 
 void lowPowerBlink();
 void lowPowerSample();
-void joystickPoll();
+void joystickLoop();
+void joystickISR();

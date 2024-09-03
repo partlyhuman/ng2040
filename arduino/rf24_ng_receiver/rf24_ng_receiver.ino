@@ -3,7 +3,6 @@
 #include <printf.h>
 
 #undef DEBUG
-#define USE_IRQ
 #define USE_RGB
 
 #define RADIO_CHANNEL 28  // Which RF channel to communicate on, 0-125
@@ -99,12 +98,13 @@ void setup() {
   pinMode(PIN_SW_PLAYER, INPUT_PULLUP);
   pinMode(PIN_SW_POWER, INPUT_PULLUP);
   int playerNum = digitalRead(PIN_SW_PLAYER) == LOW ? 2 : 1;
-  
-  // DONT COMMIT
-  //bool highPower = digitalRead(PIN_SW_POWER) == LOW;
-  bool highPower = true;
 
-  radio.setPALevel(highPower ? RF24_PA_MAX : RF24_PA_LOW);
+  // Setting high power isn't likely to change anything when the receiver isn't really sending acks
+  // Possibly use the second dip switch to select an alternate channel.
+  // bool highPower = digitalRead(PIN_SW_POWER) == LOW;
+  // radio.setPALevel(highPower ? RF24_PA_MAX : RF24_PA_LOW);
+
+  radio.setPALevel(RF24_PA_LOW);
   radio.setChannel(RADIO_CHANNEL);
   radio.setDataRate(RF24_250KBPS);  // RF24_1MBPS RF24_2MBPS RF24_250KBPS
   radio.setRetries(0, 0);
@@ -117,11 +117,9 @@ void setup() {
   radio.openReadingPipe(0, ADDRS[playerNum - 1]);
   radio.startListening();
 
-#ifdef USE_IRQ
   radio.maskIRQ(1, 1, 0);  // args = "data_sent", "data_fail", "data_ready
   pinMode(RADIO_IRQ_PIN, INPUT);
   attachInterrupt(digitalPinToInterrupt(RADIO_IRQ_PIN), rxInterrupt, FALLING);
-#endif
 
   for (int i = 0; i < JOY_PIN_COUNT; i++) {
     pinMode(joyOutPins[i], INPUT);
@@ -133,29 +131,20 @@ void setup() {
   radio.printPrettyDetails();  // (larger) function that prints human readable data
 #endif
 
-  led.setPixelColor(0, highPower ? 0xff00ff : 0x101010);
+  //led.setPixelColor(0, highPower ? 0xff00ff : 0x101010);
+  //led.show();
+  //delay(100);
+  led.setPixelColor(0, playerNum == 1 ? 0x001000 : 0x000010);
   led.show();
-  delay(100);
-  led.setPixelColor(0, playerNum == 1 ? 0x00ff00 : 0x0000ff);
-  led.show();
-  delay(100);
-  led.clear();
-  led.show();
+
+  // Leave status LED on until first message comes in
+  // delay(100);
+  // led.clear();
+  // led.show();
 }
 
 void loop() {
-#ifdef USE_IRQ
   updateJoystick();
-#else
-  if (radio.available()) {
-    radio.read(&payload, sizeof(payload_t));
-#ifdef DEBUG
-    Serial.println(payload);  // print the payload's value
-#endif
-    updateJoystick();
-  }
-#endif
-
 
 #ifdef USE_RGB
   if (nextColor != inputColor) {

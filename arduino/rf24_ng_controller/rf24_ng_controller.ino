@@ -25,7 +25,6 @@ volatile uint32_t idles = 0;
 RF24 radio(RADIO_CE_PIN, RADIO_CS_PIN);
 Ticker ledBlinkTicker(ledBlink, 500);
 Ticker lowPowerSampleTicker(lowPowerSample, 2100);
-Ticker joystickLoopTicker(joystickLoop, RATE);
 
 void setupRadio() {
   int playerNum = digitalRead(PIN_SW_PLAYER) == LOW ? 2 : 1;
@@ -60,6 +59,9 @@ void setup() {
 #ifdef DEBUG
   Serial.begin(115200);
 #endif
+  // initialize all pins to output low - does anything?
+  gpio_set_dir_all_bits(~0);
+  gpio_put_all(0);
 
   pinMode(PIN_BATT_VSENSE, INPUT);
   pinMode(PIN_LED, OUTPUT);
@@ -101,7 +103,6 @@ void setup() {
   setupRadio();
 
   lowPowerSampleTicker.start();
-  joystickLoopTicker.start();
 }
 
 inline payload_t joystickPoll() {
@@ -178,16 +179,15 @@ void joystickLoop() {
 }
 
 void lowPowerSample() {
-  if (isBatteryLow) return;
-
   float volts = map(analogRead(PIN_BATT_VSENSE), 0, 1023, 0, 3300) / 1000.0;
   if (volts < 0.5f) {
     // Probably not connected, ignore
     return;
   }
 
+  // 10K resistor dropped around 0.015V experimentally
   // Could simplify if cutoff >= 3.3V then just check against max 1024
-  if (volts < 3.25f) {
+  if (volts < 3.3 - 0.015) {
     isBatteryLow = true;
     // Slow blink
     ledBlinkTicker.interval(500);
@@ -204,7 +204,8 @@ void ledBlink() {
 }
 
 void loop() {
-  joystickLoopTicker.update();
+  joystickLoop();
   lowPowerSampleTicker.update();
   ledBlinkTicker.update();
+  sleep_ms(RATE);
 }

@@ -12,24 +12,42 @@ Adafruit_NeoPixel led(1, 16, NEO_GRB);
 const uint8_t joyInPins[JOY_PIN_COUNT] = { 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 };
 const uint32_t ledColors[JOY_PIN_COUNT] = { 0x101010, 0x101010, 0x101010, 0x101010, 0x300000, 0x181800, 0x003000, 0x000030, 0x200020, 0x200020 };
 const uint8_t ADDRS[][3] = { "P1", "P2" };
-const uint16_t POWER_DOWN_AFTER_IDLES = 2 * 1000 / RATE;  // N seconds
 typedef uint16_t payload_t;
+
+// Manual polling and sending in addition to interrupt-driven
+// If an input is dropped, this controls the maximum duration before a new one is sent
+// 16ms = 1 frame @ 60fps
+const uint32_t JOYSTICK_POLL_MS = 33;
+
+// Clock down loop by going to (CPU) sleep between iterations
+// Controls the maximum time radio will be in TX (STANDBY-I) state
+const uint32_t LOOP_SLEEP_MS = 2;
+
+// How long with no inputs before the radio fully powers down
+// Powering up takes some time but it may not be noticeable, in which case we'd want to power down more aggressively
+// N seconds
+const uint32_t POWER_DOWN_AFTER_IDLES = 2 * 1000 / JOYSTICK_POLL_MS;
+
+static_assert(LOOP_SLEEP_MS < JOYSTICK_POLL_MS, "Loop will sleep over joystick poll invocations");
 
 uint32_t joyPinsMask;
 uint32_t currentColor, nextColor;
-volatile bool isIdle;
-volatile bool isPowered = true;
+volatile bool isJoystickIdle = false;
+volatile bool isRadioPowered = true;
+volatile bool isRadioTx = false;
 bool isBatteryLow = false;
 volatile uint32_t idles = 0;
 
 RF24 radio(RADIO_CE_PIN, RADIO_CS_PIN);
 Ticker ledBlinkTicker(ledBlink, 500);
 Ticker lowPowerSampleTicker(lowPowerSample, 2100);
+Ticker joystickLoopTicker(joystickLoop, JOYSTICK_POLL_MS);
 
 void setupRadio() {
   int playerNum = digitalRead(PIN_SW_PLAYER) == LOW ? 2 : 1;
   bool highPower = digitalRead(PIN_SW_POWER) == LOW;
 
+  // Radio power savings: low power, slowest data rate, smallest possible address width, 2 byte payload, no acks
   radio.setPALevel(highPower ? RF24_PA_MAX : RF24_PA_LOW);
   radio.setChannel(RADIO_CHANNEL);
   radio.setDataRate(RF24_250KBPS);  // RF24_1MBPS RF24_2MBPS RF24_250KBPS
@@ -105,35 +123,42 @@ void setup() {
   lowPowerSampleTicker.start();
 }
 
-inline payload_t joystickPoll() {
-  uint32_t gpio_current = gpio_get_all() & joyPinsMask;
-  isIdle = gpio_current == joyPinsMask;
-  idles = isIdle ? idles + 1 : 0;
-  nextColor = isIdle ? 0x000030 : 0x000080;
-  return gpio_current >> 2;
+void ledBlink() {
+  static bool blinkOn = false;
+  blinkOn = !blinkOn;
+  digitalWrite(PIN_LED, blinkOn);
 }
 
-void joystickISR() {
-  payload_t payloadBuffer = joystickPoll();
-  if (!isPowered || idles >= POWER_DOWN_AFTER_IDLES) return;
+void lowPowerSample() {
+  // 12-bit conversion, assume max value == ADC_VREF == 3.3 V
+  const float conversion_factor = 3.3f / (1 << 12);
+  float volts = analogRead(PIN_BATT_VSENSE) * conversion_factor;
 
-  // Previous states are of no use to us
-  radio.flush_tx();
-  // Send new state immediately.
-  // Non-blocking, add to FIFO and start sending, safe for ISR. Note from docs:
-  // // This function now leaves the CE pin high, so the radio
-  // // will remain in TX or STANDBY-II Mode until a txStandBy() command is issued.
-  // So standby happens after next scheduled send.
-  //                   buf,            len,               multicast, startTx
-  radio.startFastWrite(&payloadBuffer, sizeof(payload_t), false, true);
+  // Map 0-1023 range to 0V-3.3V
+  // float volts = map(analogRead(PIN_BATT_VSENSE), 0, 1023, 0, 3300) / 1000.0;
+  
+  if (volts < 1.0) {
+    // Pin is probably floating, ignore
+    return;
+  }
+
+  // 10K resistor dropped around 0.015V experimentally
+  // Could simplify if cutoff >= 3.3V then just check against max 1024
+  if (volts < (3.3 - 0.015)) {
+    isBatteryLow = true;
+    // Slow blink
+    ledBlinkTicker.interval(500);
+    ledBlinkTicker.start();
+    // Permanent state, no rechecking needed
+    lowPowerSampleTicker.stop();
+  }
 }
 
-void updateRadioPowered() {
-  if (isIdle) {
-    if (isPowered && idles > POWER_DOWN_AFTER_IDLES) {
-      isPowered = false;
-      // In case there is an in-flight send
-      delayMicroseconds(100);
+void radioPower() {
+  // use the volatile isRadioPowered instead of locking
+  if (isJoystickIdle) {
+    if (isRadioPowered && !isRadioTx && idles > POWER_DOWN_AFTER_IDLES) {
+      isRadioPowered = false;
       radio.powerDown();
       if (!isBatteryLow) {
         // Simulate dimming, but battery low flash should not be messed with
@@ -142,32 +167,53 @@ void updateRadioPowered() {
       }
     }
   } else {
-    if (!isPowered) {
+    if (!isRadioPowered) {
       radio.powerUp();
       if (!isBatteryLow) {
         ledBlinkTicker.stop();
         digitalWrite(PIN_LED, HIGH);
       }
-      isPowered = true;
+      isRadioPowered = true;
     }
   }
 }
 
-void joystickLoop() {
-  payload_t payloadBuffer = joystickPoll();
+inline payload_t joystickPoll() {
+  uint32_t gpio_current = gpio_get_all() & joyPinsMask;
+  isJoystickIdle = gpio_current == joyPinsMask;
+  idles = isJoystickIdle ? idles + 1 : 0;
+  nextColor = isJoystickIdle ? 0x000030 : 0x000080;
+  return gpio_current >> 2;
+}
 
-  updateRadioPowered();
-
-  if (!isPowered) return;
-
-  // Disable interrupts to ensure exclusive access to the radio during the blocking write
-  // Blocking is fine in main loop.
-  // Drop back to standby mode when fifo is flushed.
-  noInterrupts();
+inline void radioSend(payload_t payload) {
+  if (!isRadioPowered) return;
+  
+  // Previous states are of no use to us
   radio.flush_tx();
-  radio.write(&payloadBuffer, sizeof(payload_t));
-  radio.txStandBy();
-  interrupts();
+  // Send new state immediately.
+  // Non-blocking, add to FIFO and start sending, safe for ISR. Note from docs:
+  // // This function now leaves the CE pin high, so the radio
+  // // will remain in TX or STANDBY-II Mode until a txStandBy() command is issued.
+  //                   buf,            len,               multicast, startTx
+  radio.startFastWrite(&payload, sizeof(payload_t), false, true);
+  isRadioTx = true;
+}
+
+void joystickISR() {
+  payload_t payload = joystickPoll();
+  if (idles < POWER_DOWN_AFTER_IDLES) {
+    radioSend(payload);
+  }
+}
+
+void joystickLoop() {
+  payload_t payload = joystickPoll();
+
+  // Observe how long we've been idle and power down or up if needed
+  radioPower();
+
+  radioSend(payload);
 
 #ifdef USE_RGB
   if (nextColor != currentColor) {
@@ -178,34 +224,22 @@ void joystickLoop() {
 #endif
 }
 
-void lowPowerSample() {
-  float volts = map(analogRead(PIN_BATT_VSENSE), 0, 1023, 0, 3300) / 1000.0;
-  if (volts < 0.5f) {
-    // Probably not connected, ignore
-    return;
-  }
-
-  // 10K resistor dropped around 0.015V experimentally
-  // Could simplify if cutoff >= 3.3V then just check against max 1024
-  if (volts < 3.3 - 0.015) {
-    isBatteryLow = true;
-    // Slow blink
-    ledBlinkTicker.interval(500);
-    ledBlinkTicker.start();
-    // Permanent state, no rechecking needed
-    lowPowerSampleTicker.stop();
-  }
-}
-
-void ledBlink() {
-  static bool blinkOn = false;
-  blinkOn = !blinkOn;
-  digitalWrite(PIN_LED, blinkOn);
-}
-
 void loop() {
-  joystickLoop();
+  joystickLoopTicker.update();
+
+  // Block until any pending sends are complete and go into standby mode
+  // Go after the joystick loop so we can take care of the most recent send immediately
+  if (isRadioTx) {
+    noInterrupts();
+    if (radio.txStandBy()) {
+      isRadioTx = false;
+    }
+    interrupts();
+  }
+
   lowPowerSampleTicker.update();
   ledBlinkTicker.update();
-  sleep_ms(RATE);
+
+  // Power saving strategy - does it have an effect vs letting loop run?
+  sleep_ms(LOOP_SLEEP_MS);
 }

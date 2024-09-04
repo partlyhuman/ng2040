@@ -1,8 +1,6 @@
 #undef DEBUG
 #undef USE_RGB
 
-// milliseconds between sends. 16 = 60fps. 4 = 250fps
-#define RATE 16
 // Which RF channel to communicate on, 0-125
 #define RADIO_CHANNEL 28
 #define RADIO_CE_PIN 26

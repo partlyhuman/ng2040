@@ -16,7 +16,7 @@ typedef uint16_t payload_t;
 // Manual polling and sending in addition to interrupt-driven
 // If an input is dropped, this controls the maximum duration before a new one is sent
 // 16ms = 1 frame @ 60fps
-const uint32_t JOYSTICK_POLL_MS = 16;
+const uint32_t JOYSTICK_POLL_MS = 100;
 
 // How long with no inputs before the radio fully powers down
 // Powering up takes some time but it may not be noticeable, in which case we'd want to power down more aggressively
@@ -30,6 +30,9 @@ volatile bool isJoystickIdle;
 volatile bool isRadioPowered;
 volatile bool isRadioTx;
 volatile uint32_t idles;
+
+struct repeating_timer ledTimer;
+struct repeating_timer batteryCheckTimer;
 
 RF24 radio(RADIO_CE_PIN, RADIO_CS_PIN);
 
@@ -67,18 +70,21 @@ void setup() {
 #ifdef DEBUG
   Serial.begin(115200);
 #endif
-  // initialize all pins to output low - does anything?
-  gpio_set_dir_all_bits(~0);
-  gpio_put_all(0);
-
-  pinMode(PIN_BATT_VSENSE, INPUT);
-  pinMode(PIN_LED, OUTPUT);
-  // pinMode(PICO_DEFAULT_LED_PIN, OUTPUT);
+  pinMode(PIN_VSENSE, INPUT);
+  pinMode(PIN_LED, OUTPUT_2MA);
   pinMode(PIN_SW_PLAYER, INPUT_PULLUP);
   pinMode(PIN_SW_POWER, INPUT_PULLUP);
-  // Should we try changing the drive strength of the GPIO pins?
 
   SPI1.begin();
+
+  // Pathetic attempt to save a tiny sliver of power
+  gpio_set_drive_strength(12, GPIO_DRIVE_STRENGTH_2MA);
+  gpio_set_drive_strength(14, GPIO_DRIVE_STRENGTH_2MA);
+  gpio_set_drive_strength(15, GPIO_DRIVE_STRENGTH_2MA);
+  gpio_set_drive_strength(RADIO_CS_PIN, GPIO_DRIVE_STRENGTH_2MA);
+  gpio_set_drive_strength(RADIO_CE_PIN, GPIO_DRIVE_STRENGTH_2MA);
+  gpio_set_drive_strength(PIN_POWER_RADIO, GPIO_DRIVE_STRENGTH_2MA);
+  gpio_set_drive_strength(PIN_LED, GPIO_DRIVE_STRENGTH_2MA);
 
   // Turn on radio power
   pinMode(PIN_POWER_RADIO, OUTPUT);
@@ -86,7 +92,6 @@ void setup() {
   delay(10);  // <2MS startup time for LDO
 
   bool success = radio.begin(&SPI1);
-  isRadioPowered = success;
 
   if (!success) {
 #ifdef USE_RGB
@@ -109,9 +114,12 @@ void setup() {
   }
 
   setupRadio();
+  isRadioPowered = true;
+
+  add_repeating_timer_ms(509, batteryCheckCallback, NULL, &batteryCheckTimer);
 }
 
-bool ledBlinkTimer(struct repeating_timer *t) {
+bool ledCallback(struct repeating_timer *t) {
   static bool blinkOn = false;
   blinkOn = !blinkOn;
   digitalWrite(PIN_LED, blinkOn);
@@ -119,15 +127,14 @@ bool ledBlinkTimer(struct repeating_timer *t) {
 }
 
 void ledBlink(uint32_t interval) {
-  static struct repeating_timer timer;
-  cancel_repeating_timer(&timer);
+  cancel_repeating_timer(&ledTimer);
 
   if (interval == 0) {
     digitalWrite(PIN_LED, HIGH);
     return;
   }
 
-  add_repeating_timer_ms(interval, ledBlinkTimer, NULL, &timer);
+  add_repeating_timer_ms(interval, ledCallback, NULL, &ledTimer);
 }
 
 inline payload_t joystickPoll() {
@@ -136,6 +143,67 @@ inline payload_t joystickPoll() {
   idles = isJoystickIdle ? idles + 1 : 0;
   nextColor = isJoystickIdle ? 0x000030 : 0x000080;
   return bits >> 2;
+}
+
+// My "clever" way to measure battery power when the battery itself is powering the reference voltage:
+// VBatt => 3.3V regulator on RP2040 Zero => VRef
+// VBatt => 3.0V regulator on NG2040 board => A1 pin, measure
+// Using the simplified idea that for a regulator, VOut = Min(VReg, VIn),
+// note that for 3.0 < VBatt < 3.3, the 3.0V regulator will output 3.0V but the 3.3V regulator will be dropping below 3.3V to VBatt.
+// This way we can flip the script, and MEASURE the 3.0V regulator in order to INFER a drop in the reference voltage.
+// Again this really only works between 3.0V and 3.3V, but that's exactly when we want to warn that battery is low.
+bool batteryCheckCallback(struct repeating_timer *t) {
+  // We need to know what our scale/resolution is
+  const int bits = 12;
+  analogReadResolution(bits);
+  float scale = (float)(1 << bits);
+
+  const float LOW_BATTERY_V = 3.25;
+
+  // VMeasured = 3.0 / VRef
+  // rearranging, VRef = 3.0 / VMeasured
+  // VRef = MIN(VBatt, 3.3)
+  const float fixed3_0 = 3.0;
+  float measured = analogRead(PIN_VSENSE) / scale;
+  float vref = fixed3_0 / measured;
+
+#ifdef USE_RGB
+  if (vref >= 3.3) {
+    led.setPixelColor(0, 0xffffff);
+  } else if (vref >= 3.25) {
+    led.setPixelColor(0, 0x0000ff);
+  } else if (vref >= 3.2) {
+    led.setPixelColor(0, 0x008080);
+  } else if (vref >= 3.15) {
+    led.setPixelColor(0, 0x00ff00);
+  } else if (vref >= 3.1) {
+    led.setPixelColor(0, 0x808000);
+  } else if (vref >= 3.05) {
+    led.setPixelColor(0, 0xff0000);
+  } else {
+    led.setPixelColor(0, 0x100000);
+  }
+  led.show();
+#endif
+
+  if (vref < 1.0) {
+    // Pin is probably floating, ignore
+    return true;
+  }
+
+  static int lowBattReadings = 0;
+  if (vref < LOW_BATTERY_V) {
+    // Make sure this is not a fluke by capturing multiple readings
+    if (++lowBattReadings > 10) {
+      isBatteryLow = true;
+      // Slow blink
+      ledBlink(800);
+      // Stop measuring
+      return false;
+    }
+  }
+
+  return true;
 }
 
 void joystickISR() {
@@ -147,8 +215,10 @@ void joystickISR() {
     // Non-blocking, add to FIFO and start sending, safe for ISR. Note from docs:
     // // This function now leaves the CE pin high, so the radio
     // // will remain in TX or STANDBY-II Mode until a txStandBy() command is issued.
-    //                   buf,            len,               multicast, startTx
-    radio.startFastWrite(&payload, sizeof(payload_t), false, true);
+    radio.startFastWrite(&payload,
+                         sizeof(payload_t),
+                         false,  // multicast
+                         true);  // startTx
     isRadioTx = true;
   }
 }
@@ -168,7 +238,6 @@ void loop() {
 
     if (isRadioPowered && idles > POWER_DOWN_AFTER_IDLES && !isRadioTx) {
       isRadioPowered = false;
-      // In case there is an in-flight send
       radio.powerDown();
       if (!isBatteryLow) {
         // Simulate dimming, but battery low flash should not be messed with
@@ -178,7 +247,7 @@ void loop() {
       radio.powerUp();
       if (!isBatteryLow) {
         ledBlink(0);
-      }      
+      }
       isRadioPowered = true;
     }
 

@@ -1,4 +1,3 @@
-#undef DEBUG
 #undef USE_RGB
 
 // Which RF channel to communicate on, 0-125

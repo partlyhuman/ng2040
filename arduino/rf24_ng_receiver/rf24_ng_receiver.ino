@@ -5,12 +5,18 @@
 #undef DEBUG
 #define USE_RGB
 
-#define RADIO_CHANNEL 28  // Which RF channel to communicate on, 0-125
+#undef REV_7
+#define REV_6
+
+// Picked channels completely at random
+#define RADIO_CHANNEL_1 28
+#define RADIO_CHANNEL_2 107
+#define PIN_SW_PLAYER 29
+#define PIN_SW_CHANNEL 28
+
 #define RADIO_IRQ_PIN 27
 #define RADIO_CE_PIN 26
 #define RADIO_CS_PIN 13
-#define PIN_SW_POWER 28
-#define PIN_SW_PLAYER 29
 
 #define JOY_PIN_COUNT 10
 //                                          L  R  D  U  A  B  C  D  SEL STA
@@ -96,8 +102,9 @@ void setup() {
   }
 
   pinMode(PIN_SW_PLAYER, INPUT_PULLUP);
-  pinMode(PIN_SW_POWER, INPUT_PULLUP);
-  int playerNum = digitalRead(PIN_SW_PLAYER) == LOW ? 2 : 1;
+  pinMode(PIN_SW_CHANNEL, INPUT_PULLUP);
+  int playerNum = digitalRead(PIN_SW_PLAYER) == HIGH ? 1 : 2;
+  int channel = digitalRead(PIN_SW_CHANNEL) == HIGH ? RADIO_CHANNEL_1 : RADIO_CHANNEL_2;
 
   // Setting high power isn't likely to change anything when the receiver isn't really sending acks
   // Possibly use the second dip switch to select an alternate channel.
@@ -105,7 +112,7 @@ void setup() {
   // radio.setPALevel(highPower ? RF24_PA_MAX : RF24_PA_LOW);
 
   radio.setPALevel(RF24_PA_LOW);
-  radio.setChannel(RADIO_CHANNEL);
+  radio.setChannel(channel);
   radio.setDataRate(RF24_250KBPS);  // RF24_1MBPS RF24_2MBPS RF24_250KBPS
   radio.setRetries(0, 0);
   radio.setPayloadSize(sizeof(payload_t));

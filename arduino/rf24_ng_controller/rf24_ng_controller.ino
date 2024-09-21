@@ -1,7 +1,7 @@
 #include <RF24.h>
 #include "rf24_ng_controller.h"
 
-// In REV6+ the RGBLED is no longer visible through an opaque case, using single external LED
+// In REV2+ the RGBLED is no longer visible through an opaque case, using single external LED
 #ifdef USE_RGB
 #include <Adafruit_NeoPixel.h>
 Adafruit_NeoPixel led(1, 16, NEO_GRB);
@@ -45,14 +45,16 @@ struct repeating_timer batteryCheckTimer;
 RF24 radio(RADIO_CE_PIN, RADIO_CS_PIN);
 
 void setupRadio() {
-  int playerNum = digitalRead(PIN_SW_PLAYER) == LOW ? 2 : 1;
-  // TODO consider making the second dip switch allow different channels instead of power
-  // TODO consider holding multiple buttons during startup to modify behaviour
-  bool highPower = digitalRead(PIN_SW_POWER) == LOW;
+  // high = off (pullup), low = on (shorted to gnd)
+  int playerNum = digitalRead(PIN_SW_PLAYER) == HIGH ? 1 : 2;
+  int channel = digitalRead(PIN_SW_CHANNEL) == HIGH ? RADIO_CHANNEL_1 : RADIO_CHANNEL_2;
+
+  // TODO consider holding multiple buttons during startup to modify behaviour, maybe for power
+  // bool highPower = digitalRead(PIN_SW_POWER) == LOW;
 
   // Radio power savings: low power, slowest data rate, smallest possible address width, 2 byte payload, no acks
-  radio.setPALevel(highPower ? RF24_PA_MAX : RF24_PA_LOW);
-  radio.setChannel(RADIO_CHANNEL);
+  radio.setPALevel(RF24_PA_LOW);
+  radio.setChannel(channel);
   radio.setDataRate(RF24_250KBPS);  // RF24_1MBPS RF24_2MBPS RF24_250KBPS
   radio.setRetries(0, 0);
   radio.setPayloadSize(sizeof(payload_t));
@@ -79,7 +81,7 @@ void setupRadio() {
 void setup() {
   pinMode(PIN_VSENSE, INPUT);
   pinMode(PIN_SW_PLAYER, INPUT_PULLUP);
-  pinMode(PIN_SW_POWER, INPUT_PULLUP);
+  pinMode(PIN_SW_CHANNEL, INPUT_PULLUP);
   pinMode(PIN_LED, OUTPUT_2MA);
 
   SPI1.begin();
@@ -92,11 +94,6 @@ void setup() {
   // gpio_set_drive_strength(RADIO_CE_PIN, GPIO_DRIVE_STRENGTH_2MA);
   // gpio_set_drive_strength(PIN_POWER_RADIO, GPIO_DRIVE_STRENGTH_2MA);
   // gpio_set_drive_strength(PIN_LED, GPIO_DRIVE_STRENGTH_2MA);
-
-  // Turn on radio power
-  pinMode(PIN_POWER_RADIO, OUTPUT);
-  digitalWrite(PIN_POWER_RADIO, HIGH);
-  delay(10);  // <2MS startup time for LDO
 
   bool success = radio.begin(&SPI1);
 

@@ -3067,6 +3067,17 @@
 			(pintype "power_in")
 			(uuid "e9be380c-e1c0-4cd9-a465-6388c15df827")
 		)
+		(model "${KIPRJMOD}/Downloads/RP2040-Tiny-Step_V1.1/RP2040-Tiny V1.1.step"
+			(offset
+				(xyz 1 1 1)
+			)
+			(scale
+				(xyz 1 1 1)
+			)
+			(rotate
+				(xyz 0 0 0)
+			)
+		)
 	)
 	(footprint "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder"
 		(layer "B.Cu")

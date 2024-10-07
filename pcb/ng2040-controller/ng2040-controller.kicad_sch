@@ -4583,21 +4583,21 @@
 		(fields_autoplaced yes)
 		(uuid "5b168a7b-7078-4351-82a8-b1d62bb6fd1f")
 		(property "Reference" "U1"
-			(at 137.5059 82.55 0)
+			(at 142.7165 82.55 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(justify left)
+				(justify right)
 			)
 		)
-		(property "Value" "RP2040-Zero"
-			(at 137.5059 85.09 0)
+		(property "Value" "RP2040 Tiny"
+			(at 142.7165 85.09 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(justify left)
+				(justify right)
 			)
 		)
 		(property "Footprint" "RP2040Zero:RP2040-Zero"

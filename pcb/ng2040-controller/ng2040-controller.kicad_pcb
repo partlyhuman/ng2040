@@ -54,6 +54,7 @@
 			)
 			(layer "F.Mask"
 				(type "Top Solder Mask")
+				(color "Black")
 				(thickness 0.01)
 			)
 			(layer "F.Cu"
@@ -73,6 +74,7 @@
 			)
 			(layer "B.Mask"
 				(type "Bottom Solder Mask")
+				(color "Black")
 				(thickness 0.01)
 			)
 			(layer "B.Paste"
@@ -1303,9 +1305,9 @@
 				)
 			)
 		)
-		(property "Value" "NRF24L01 Connector"
-			(at 1.27 9.95 0)
-			(layer "F.Fab")
+		(property "Value" "RADIO"
+			(at -2.225 4.1 90)
+			(layer "F.SilkS")
 			(uuid "53166373-b23c-4eb7-bfb2-39f9755cb357")
 			(effects
 				(font
@@ -8027,7 +8029,7 @@
 				(justify mirror)
 			)
 		)
-		(property "Value" "RP2040-Zero"
+		(property "Value" "RP2040 Tiny"
 			(at 10.16 13.45 0)
 			(unlocked yes)
 			(layer "B.SilkS")
@@ -8439,9 +8441,9 @@
 			(pintype "power_in")
 			(uuid "22ce2ae3-9fd8-4d7d-b61b-a445cf70c51b")
 		)
-		(model "${KIPRJMOD}/Downloads/RP2040 Zero/RP2040_Zero.stp"
+		(model "${KIPRJMOD}/Downloads/RP2040-Tiny-Step_V1.1/RP2040-Tiny V1.1.step"
 			(offset
-				(xyz 1.2 0.8 2)
+				(xyz 1.2 0.8 1)
 			)
 			(scale
 				(xyz 1 1 1)

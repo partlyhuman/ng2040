@@ -1,0 +1,183 @@
+(footprint "DIY_DB15"
+	(version 20241229)
+	(generator "pcbnew")
+	(generator_version "9.0")
+	(layer "F.Cu")
+	(property "Reference" "REF**"
+		(at 3 -0.5 0)
+		(unlocked yes)
+		(layer "F.SilkS")
+		(uuid "130a3981-9634-45c9-9f21-a8b0fd973f74")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.1)
+			)
+		)
+	)
+	(property "Value" "DIY_DB15"
+		(at 3 1 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(uuid "2b3b39a9-c949-4ee0-9a2a-6d59b8d1c7cb")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Datasheet" ""
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "7324bc37-5381-40ed-a347-d9cd8e3d571a")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Description" ""
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "b49b22aa-00f5-49ff-bee5-523f3cb0b550")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(attr smd)
+	(fp_text user "${REFERENCE}"
+		(at 3 2.5 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(uuid "ec15d5e2-32aa-47cf-8ad4-1d3cb1d17c34")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(pad "1" smd rect
+		(at 9.54 0 90)
+		(size 4.5 2)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(thermal_bridge_angle 45)
+		(uuid "bbe77e32-8847-4b63-85de-ea9b4e335e4c")
+	)
+	(pad "2" smd rect
+		(at 6.77 0 90)
+		(size 4.5 2)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(thermal_bridge_angle 45)
+		(uuid "b33e34af-7376-4c30-a4e5-45e460e85084")
+	)
+	(pad "3" smd rect
+		(at 4 0 90)
+		(size 4.5 2)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(thermal_bridge_angle 45)
+		(uuid "fc674a0e-900f-4fb5-a8cb-38264f4ffbb3")
+	)
+	(pad "4" smd rect
+		(at 1.23 0 90)
+		(size 4.5 2)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(thermal_bridge_angle 45)
+		(uuid "dfef6663-30b8-4e4e-880b-596994fe1b98")
+	)
+	(pad "5" smd rect
+		(at -1.54 0 90)
+		(size 4.5 2)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(thermal_bridge_angle 45)
+		(uuid "af5c64c0-efb0-448e-9241-09cb225f1606")
+	)
+	(pad "6" smd rect
+		(at -4.31 0 90)
+		(size 4.5 2)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(thermal_bridge_angle 45)
+		(uuid "4841041f-4760-4f2c-94cb-c6c294fda1cc")
+	)
+	(pad "7" smd rect
+		(at -7.08 0 90)
+		(size 4.5 2)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(thermal_bridge_angle 45)
+		(uuid "235ab539-3f41-4fad-98df-8c3afec61b59")
+	)
+	(pad "8" smd rect
+		(at -9.85 0 90)
+		(size 4.5 2)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(thermal_bridge_angle 45)
+		(uuid "388c7b2f-56ec-4262-a112-13393a6344f6")
+	)
+	(pad "9" smd rect
+		(at 8.3 0 270)
+		(size 4.5 2)
+		(layers "B.Cu" "B.Mask" "B.Paste")
+		(thermal_bridge_angle 45)
+		(uuid "627e4880-826a-4687-a7be-10aa73f8c25a")
+	)
+	(pad "10" smd rect
+		(at 5.53 0 270)
+		(size 4.5 2)
+		(layers "B.Cu" "B.Mask" "B.Paste")
+		(thermal_bridge_angle 45)
+		(uuid "43ad73fc-6c33-487d-8cf1-9879bce63aa5")
+	)
+	(pad "11" smd rect
+		(at 2.76 0 270)
+		(size 4.5 2)
+		(layers "B.Cu" "B.Mask" "B.Paste")
+		(thermal_bridge_angle 45)
+		(uuid "dd99aed1-6be9-433c-990f-5ec8b926f60e")
+	)
+	(pad "12" smd rect
+		(at -0.01 0 270)
+		(size 4.5 2)
+		(layers "B.Cu" "B.Mask" "B.Paste")
+		(thermal_bridge_angle 45)
+		(uuid "bda85616-8ec4-43e3-982a-56f4a875bc07")
+	)
+	(pad "13" smd rect
+		(at -2.78 0 270)
+		(size 4.5 2)
+		(layers "B.Cu" "B.Mask" "B.Paste")
+		(thermal_bridge_angle 45)
+		(uuid "e5448589-7e28-4740-a2a6-2eae8784648d")
+	)
+	(pad "14" smd rect
+		(at -5.55 0 270)
+		(size 4.5 2)
+		(layers "B.Cu" "B.Mask" "B.Paste")
+		(thermal_bridge_angle 45)
+		(uuid "c42570b1-1c74-4f82-b4da-3415a5bf670e")
+	)
+	(pad "15" smd rect
+		(at -8.32 0 270)
+		(size 4.5 2)
+		(layers "B.Cu" "B.Mask" "B.Paste")
+		(thermal_bridge_angle 45)
+		(uuid "5efc35bf-bc5a-4454-a626-8f203c7489ef")
+	)
+	(group ""
+		(uuid "828f4bdc-6d8c-486a-ba64-8954126b33eb")
+		(members "235ab539-3f41-4fad-98df-8c3afec61b59" "388c7b2f-56ec-4262-a112-13393a6344f6"
+			"4841041f-4760-4f2c-94cb-c6c294fda1cc" "af5c64c0-efb0-448e-9241-09cb225f1606"
+			"b33e34af-7376-4c30-a4e5-45e460e85084" "bbe77e32-8847-4b63-85de-ea9b4e335e4c"
+			"dfef6663-30b8-4e4e-880b-596994fe1b98" "fc674a0e-900f-4fb5-a8cb-38264f4ffbb3"
+		)
+	)
+	(embedded_fonts no)
+)

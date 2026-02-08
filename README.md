@@ -26,7 +26,7 @@ The project is ready for production, but there is a compatibility issue:
 
 The DB15 connectors used are standard depth and work perfectly with supergun setups. However, to use with Neo Geo AES consoles and their extra-deep DB15 ports, a pigtail is required. There are AES specific designs in this repository that can be built using hand-soldered pins and a 3d-printed shroud, but I was never really happy with them, so they're not part of the "official" offering here - feel free to try them out if you so desire, of course.
 
-The joystick design continues on as a BTLE joystick, which can pair with a Neo Geo BlueRetro dongle, any other console with BlueRetro, or your PC! See the ESP.Ra.Dio project here:
+The joystick design continues on as a BTLE joystick, which can pair with a Neo Geo BlueRetro dongle, any other console with BlueRetro, or your PC! See my [ESP.Ra.Dio project](https://github.com/partlyhuman/esp.ra.dio).
 
 ## Build instructions
 

@@ -1,18 +1,19 @@
 # NG2040
-### A pretty cute DIY 2.4GHz wireless controller for Neo Geo
+### A cute DIY RP2040+2.4GHz wireless controller for Neo Geo
 
 <img src="img/topdown.jpg"/>
 
 This is a wireless joystick and receiver for Neo Geo consoles that I designed to meet these requirments:
 
-* Super compact
+* Super compact joystick (6.5"x4.5" / 17x12cm)
+* Super compact receiver (extends 1.5" / 4cm out from port)
 * 3D printable
 * Can use cheap Sanwa clones or the real thing
 * No (less than 1 frame) of lag
 * 2.4GHz radio, no pairing nonsense
 * Long battery life with deep sleep
 * USB-C rechargeable battery
-* Tidy wiring
+* PCB using JST for tidy button wiring
 
 It uses the ubiquitous RP2040 (specifically, the Waveshare RP2040 Tiny) and Nordic nRF24L01 radios.
 
